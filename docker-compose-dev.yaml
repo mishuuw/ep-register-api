@@ -1,0 +1,63 @@
+name: ep-register
+
+services:
+    database:
+        image: postgres:16
+        restart: always
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: postgres
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "10m"
+                max-file: "5"
+        volumes:
+            - ./dumps/main.sql:/docker-entrypoint-initdb.d/main.sql
+            - ./dumps:/dumps
+
+    api:
+        links:
+            - database
+        image: api
+        restart: always
+        environment:
+            DB_NAME: postgres
+            DB_PORT: 5432
+            DB_PASS: postgres
+            DB_USER: postgres
+            DB_HOST: database
+            MODE: dev
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "10m"
+                max-file: "5"
+        build: ./core
+        command: python -m uvicorn src.app:app --host 0.0.0.0 --port 8000 --reload
+        volumes:
+            - ./core/static:/core/static
+            - ./core/logs:/core/logs
+
+    nginx:
+        image: nginx:1.25.4
+        restart: always
+        volumes:
+            - ./nginx/dev.conf:/etc/nginx/nginx.conf
+            - ./nginx/mime.types:/etc/nginx/mime.types
+            - ./core/static:/core/static
+        ports:
+            - 8042:80
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "10m"
+                max-file: "5"
+        depends_on:
+            - api
+            - database
+            
+volumes:
+    data:
+        driver: local

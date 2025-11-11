@@ -1,0 +1,9 @@
+{
+    "python.analysis.extraPaths": [
+        "./core"
+    ],
+    "python.analysis.autoImportCompletions": false,
+    "makefile.configureOnOpen": false,
+    "python-envs.defaultEnvManager": "ms-python.python:venv",
+    "python-envs.pythonProjects": [],
+}
