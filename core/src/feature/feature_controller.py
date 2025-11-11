@@ -22,7 +22,7 @@ settings = get_settings()
 
 
 @cbv(feature_router)
-class BookingController:
+class FeatureController:
     def __init__(
         self,
         back: BackgroundTasks,

@@ -3,6 +3,8 @@ from src.models.base import BaseOrm
 
     
 class RoleOrm(BaseOrm):
+    __tablename__ = "role"
+    
     title = Column(TEXT, default=None)
     description = Column(TEXT, default=None)
     
@@ -12,4 +14,5 @@ class RoleOrm(BaseOrm):
 
 
 class UserOrm(BaseOrm):
-    role = Column(ForeignKey(RoleOrm.id), ondelete="CASCADE")
+    __tablename__ = "user"
+    role = Column(ForeignKey(RoleOrm.id))

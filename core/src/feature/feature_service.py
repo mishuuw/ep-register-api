@@ -6,6 +6,7 @@ from src.common.common_repo import CommonRepository
 from src.feature.feature_schema import FeatureAddSchema, FeatureAddViewSchema, FeatureGetSchema, FeatureGetViewSchema
 from src.feature.feature_usecase import FeatureUsecase
 from src.feature.feature_repo import FeatureRepository
+from src.models.user import UserOrm
 from src.utils.common_util import timeit
 
 
@@ -36,7 +37,21 @@ class FeatureService:
         self,
         data: FeatureGetSchema,
     ) -> FeatureGetViewSchema:
-        pass
+        
+        chlen = await self.common_repo.get_one(
+            UserOrm,
+            UserOrm.chlen == True,
+        )
+        print(chlen)
+        
+        return FeatureGetViewSchema(
+            count=0,
+            result=[
+                FeatureGetSchema(
+                    id=444,
+                )    
+            ],
+        )
 
     @timeit
     async def add(

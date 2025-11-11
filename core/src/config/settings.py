@@ -62,9 +62,6 @@ class Settings(BaseSettings):
         # "*",
         # "http://localhost",
         "http://localhost:5173",
-        "https://api.fiftysev.ru",
-        "https://fiftysev.ru",
-        "https://map.dvfu.ru",
     }
 
 
