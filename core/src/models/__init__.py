@@ -1,2 +1,7 @@
-import src.models.feature  # noqa
 import src.models.enum  # noqa
+import src.models.department  # noqa
+import src.models.field_of_study  # noqa
+import src.models.degree  # noqa
+import src.models.educational_program_partner  # noqa
+import src.models.school  # noqa
+import src.models.educational_program

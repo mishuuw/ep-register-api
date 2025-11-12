@@ -21,3 +21,6 @@ class DependencyCheckSchema:
     ):
         self.table = table
         self.id = id
+        
+class AddViewSchema(BaseModel):
+    id: int = Field(..., description="id of created entity")

@@ -9,7 +9,7 @@ from src.config.settings import get_settings
 settings = get_settings()
 
 
-class FeatureRepository:
+class EducationalProgramRepository:
     def __init__(
         self,
         lang: Literal["ru", "en"],

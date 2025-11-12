@@ -4,10 +4,10 @@ from typing import Literal
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_repo import CommonRepository
-from src.feature.feature_repo import FeatureRepository
+from src.degree.degree_repo import DegreeRepository
 
 
-class FeatureUsecase:
+class DegreeUsecase:
     def __init__(
         self,
         session: AsyncSession,
@@ -19,7 +19,7 @@ class FeatureUsecase:
         self.session = session
 
         self.common_repo = CommonRepository(session=session)
-        self.feature_repo = FeatureRepository(
+        self.degree_repo = DegreeRepository(
             lang=lang,
             back=back,
             session=session,
