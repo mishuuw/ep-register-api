@@ -7,6 +7,7 @@ from src.department.department_controller import department_router
 from src.degree.degree_controller import degree_router
 from src.field_of_study.field_of_study_controller import field_of_study_router
 from src.school.school_controller import school_router
+from src.user.user_controller import user_router
 
 
 api_router = APIRouter()
@@ -26,6 +27,7 @@ api_router.include_router(department_router, prefix="/department")
 api_router.include_router(degree_router, prefix="/degree")
 api_router.include_router(field_of_study_router, prefix="/field_of_study")
 api_router.include_router(school_router, prefix="/school")
+api_router.include_router(user_router, prefix="/user")
 
 @api_router.get("/healthcheck")
 async def healthcheck():
