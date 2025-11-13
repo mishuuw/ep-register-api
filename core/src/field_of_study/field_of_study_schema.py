@@ -1,18 +1,22 @@
 from typing import List,Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, constr
 
 
-
-class FieldOfStudyFilterSchema(BaseModel):
-    id: int = Field(..., description="some ID")
+class FieldOfStudySchema(BaseModel):
+    code: str = Field(..., pattern=r'^[0-9]{2}\.[0-9]{2}\.[0-9]{2}$', description="Field of Study code")
+    title: str = Field(..., description="Field of Study title")
+    title_short: str = Field(..., description="Field of Study short title")
     
-class FieldOfStudyGetSchema(BaseModel):
-    id: int = Field(..., description="some ID")
-
-class FieldOfStudyAddSchema(BaseModel):
-    id: int = Field(..., description="some ID")
+class FieldOfStudyGetSchema(FieldOfStudySchema):
+    id: int = Field(..., description="Field of Study ID")
     
+class FieldOfStudyUpdateSchema(BaseModel):
+    id: int = Field(..., description="Field of Study ID")
+    code: Optional[str] = Field(None, pattern=r'^[0-9]{2}\.[0-9]{2}\.[0-9]{2}$', description="Field of Study code")
+    title: Optional[str] = Field(None, description="Field of Study title")
+    title_short: Optional[str] = Field(None, description="Field of Study short title")
+
 class FieldOfStudyGetViewSchema(BaseModel):
     count: int = Field(..., description="Total count")
-    result: List[FieldOfStudyGetSchema] = Field(..., description="List of items")
+    result: List[FieldOfStudyGetSchema] = Field(..., description="List of Fields of Study")

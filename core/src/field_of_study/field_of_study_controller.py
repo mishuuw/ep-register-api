@@ -5,9 +5,9 @@ from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema
 from src.field_of_study.field_of_study_schema import (
-    FieldOfStudyFilterSchema,
     FieldOfStudyGetViewSchema,
-    FieldOfStudyAddSchema
+    FieldOfStudySchema,
+    FieldOfStudyUpdateSchema,
 )
 from src.field_of_study.field_of_study_service import FieldOfStudyService
 from src.common.token_service import token_service
@@ -45,34 +45,35 @@ class FieldOfStudyController:
     @try_rollback
     async def field_of_study_get(
         self,
-        filter: FieldOfStudyFilterSchema = Depends(),
     #    _: UserSchema = Depends(token_service.admin_required),
     ) -> FieldOfStudyGetViewSchema:
-        pass
+        return await self.field_of_study_service.field_of_study_get()
 
 
     @field_of_study_router.post("/add", tags=["field_of_study"])
     @try_rollback
     async def field_of_study_add(
         self,
-        data: FieldOfStudyAddSchema,
+        data: FieldOfStudySchema,
     #    _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
-        pass
+        return await self.field_of_study_service.field_of_study_add(data=data)
     
     @field_of_study_router.patch("/update", tags=["field_of_study"])
     @try_rollback
     async def field_of_study_update(
         self,
+        data: FieldOfStudyUpdateSchema,
     #    _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
-        pass
+        return await self.field_of_study_service.field_of_study_update(data=data)
 
 
     @field_of_study_router.delete("/delete", tags=["field_of_study"])
     @try_rollback
     async def field_of_study_delete(
         self,
+        field_of_study_id: int = Query(..., description="Field of Study ID"),
     #    _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
-        pass
+        return await self.field_of_study_service.field_of_study_delete(field_of_study_id=field_of_study_id)
