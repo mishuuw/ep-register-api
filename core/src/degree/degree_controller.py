@@ -5,9 +5,9 @@ from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema
 from src.degree.degree_schema import (
-    DegreeFilterSchema,
     DegreeGetViewSchema,
-    DegreeAddSchema
+    DegreeAddSchema,
+    DegreeUpdateSchema
 )
 from src.degree.degree_service import DegreeService
 from src.common.token_service import token_service
@@ -45,10 +45,9 @@ class DegreeController:
     @try_rollback
     async def degree_get(
         self,
-        filter: DegreeFilterSchema = Depends(),
-    #    _: UserSchema = Depends(token_service.admin_required),
+    #    _: UserSchema = Depends(token_service.login_required),
     ) -> DegreeGetViewSchema:
-        pass
+        return await self.degree_service.degree_get()
 
 
     @degree_router.post("/add", tags=["degree"])
@@ -58,21 +57,23 @@ class DegreeController:
         data: DegreeAddSchema,
     #    _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
-        pass
+        return await self.degree_service.degree_add(data=data)
     
     @degree_router.patch("/update", tags=["degree"])
     @try_rollback
     async def degree_update(
         self,
+        data: DegreeUpdateSchema,
     #    _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
-        pass
+        return await self.degree_service.degree_update(data=data)
 
 
     @degree_router.delete("/delete", tags=["degree"])
     @try_rollback
     async def degree_delete(
         self,
+        degree_id: int = Query(..., description="Degree ID"),
     #    _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
-        pass
+        return await self.degree_service.degree_delete(degree_id=degree_id)
