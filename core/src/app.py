@@ -57,11 +57,10 @@ def custom_openapi():
         openapi_schema["components"]["securitySchemes"] = {}
 
     openapi_schema["components"]["securitySchemes"] = {
-        "Bearer": {
+        "CookieAuth": {
             "type": "apiKey",
-            "in": "header",
-            "name": "auth",
-            "description": "Enter your bearer token",
+            "in": "cookie",
+            "name": "ep-register-token",
         },
     }
 

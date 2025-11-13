@@ -9,7 +9,7 @@ from src.models.school import SchoolOrm
 from src.models.department import DepartmentOrm
 from src.models.degree import DegreeOrm
 from src.models.field_of_study import FieldOfStudyOrm
-from src.models.user import RoleOrm, UserOrm
+from src.models.user import UserOrm
 from src.models.enum import AccessLevelEnum
 
 
@@ -74,20 +74,6 @@ async def seed(session: AsyncSession) -> None:
         values={"title": "Прикладная информатика", "title_short": "ПИ"},
     )
 
-    # Roles
-    role_admin, _ = await upsert(
-        session,
-        RoleOrm,
-        where={"title": "Admin"},
-        values={"access_level": AccessLevelEnum.admin},
-    )
-    role_manager, _ = await upsert(
-        session,
-        RoleOrm,
-        where={"title": "РОП ИМКТ"},
-        values={"access_level": AccessLevelEnum.manager, "school_id": school.id},
-    )
-
     # Users (dummy)
     await upsert(
         session,
@@ -98,7 +84,7 @@ async def seed(session: AsyncSession) -> None:
             "position": "Директор",
             "full_name": "Админов админ админович",
             "internal_number": "1001",
-            "role_id": role_admin.id,
+            "access_level": AccessLevelEnum.admin,
             "department_id": dept.id,
             "is_active": True,
         },
@@ -113,7 +99,8 @@ async def seed(session: AsyncSession) -> None:
             "position": "РОП",
             "full_name": "Ропов роп ропович",
             "internal_number": "1002",
-            "role_id": role_manager.id,
+            "access_level": AccessLevelEnum.manager,
+            "school_id": school.id,
             "department_id": dept.id,
             "is_active": True,
         },

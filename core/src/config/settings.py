@@ -54,6 +54,7 @@ class Settings(BaseSettings):
     HOST: str = os.environ.get("HOST")
     MODE: str = os.environ.get("MODE", "dev")
     SECRET_AUTH: str = os.environ.get("SECRET_AUTH")    
+    EP_REGISTER_COOKIE_NAME: str = os.environ.get("EP_REGISTER_COOKIE_NAME")
     ALGORITHM: str = os.environ.get("ALGORITHM")
     ALLOWED_CORS_ORIGINS: set = {
         HOST,

@@ -5,6 +5,7 @@ from sqlalchemy import and_, case, exists, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_exc import NotFoundHttpException
 from src.config.settings import get_settings
+from src.models.user import UserOrm
 
 settings = get_settings()
 
