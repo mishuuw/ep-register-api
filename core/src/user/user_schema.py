@@ -9,7 +9,7 @@ class UserSchema(BaseModel):
     full_name: Optional[str] = Field(..., description="User full name")
     internal_number: Optional[str] = Field(..., description="User internal number")
     
-    access_level: AccessLevelEnum = Field(..., description="Access level")
+    access_level: Optional[AccessLevelEnum] = Field(None, description="Access level")
     school_id: Optional[int] = Field(None, description="School ID", le=3)
     department_id: Optional[int] = Field(None, description="Department ID")
     
@@ -34,4 +34,4 @@ class UserUpdateSchema(BaseModel):
     school_id: Optional[int] = Field(None, description="School ID", le=3)
     department_id: Optional[int] = Field(None, description="Department ID")
     
-    is_active: Optional[bool] = Field(None, description="Is active")
+    is_active: Optional[bool] = Field(..., description="Is active")

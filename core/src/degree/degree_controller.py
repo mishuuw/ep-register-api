@@ -44,8 +44,7 @@ class DegreeController:
     @degree_router.get("/get", tags=["degree"])
     @try_rollback
     async def degree_get(
-        self,
-    #    _: UserSchema = Depends(token_service.login_required),
+        self
     ) -> DegreeGetViewSchema:
         return await self.degree_service.degree_get()
 
@@ -55,7 +54,7 @@ class DegreeController:
     async def degree_add(
         self,
         data: DegreeAddSchema,
-    #    _: UserSchema = Depends(token_service.admin_required),
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
         return await self.degree_service.degree_add(data=data)
     
@@ -64,7 +63,7 @@ class DegreeController:
     async def degree_update(
         self,
         data: DegreeUpdateSchema,
-    #    _: UserSchema = Depends(token_service.admin_required),
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
         return await self.degree_service.degree_update(data=data)
 
@@ -74,6 +73,6 @@ class DegreeController:
     async def degree_delete(
         self,
         degree_id: int = Query(..., description="Degree ID"),
-    #    _: UserSchema = Depends(token_service.admin_required),
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
         return await self.degree_service.degree_delete(degree_id=degree_id)

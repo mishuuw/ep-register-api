@@ -11,7 +11,7 @@ class UserOrm(BaseOrm):
     full_name = Column(TEXT)
     internal_number = Column(TEXT)
     
-    access_level = Column(Enum(AccessLevelEnum), nullable=False)
+    access_level = Column(Enum(AccessLevelEnum), nullable=True)
     school_id = Column(ForeignKey("school.id"))
     department_id = Column(ForeignKey("department.id", ondelete="SET NULL"))
     
