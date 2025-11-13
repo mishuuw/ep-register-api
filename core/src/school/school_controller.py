@@ -5,9 +5,9 @@ from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema
 from src.school.school_schema import (
-    SchoolFilterSchema,
     SchoolGetViewSchema,
-    SchoolAddSchema
+    SchoolSchema,
+    SchoolUpdateSchema,
 )
 from src.school.school_service import SchoolService
 from src.common.token_service import token_service
@@ -45,34 +45,35 @@ class SchoolController:
     @try_rollback
     async def school_get(
         self,
-        filter: SchoolFilterSchema = Depends(),
     #    _: UserSchema = Depends(token_service.admin_required),
     ) -> SchoolGetViewSchema:
-        pass
+        return await self.school_service.school_get()
 
 
     @school_router.post("/add", tags=["school"])
     @try_rollback
     async def school_add(
         self,
-        data: SchoolAddSchema,
+        data: SchoolSchema,
     #    _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
-        pass
+        return await self.school_service.school_add(data = data)
     
     @school_router.patch("/update", tags=["school"])
     @try_rollback
     async def school_update(
         self,
+        data: SchoolUpdateSchema
     #    _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
-        pass
+        return await self.school_service.school_update(data = data)
 
 
     @school_router.delete("/delete", tags=["school"])
     @try_rollback
     async def school_delete(
         self,
+        school_id: int = Query(..., description="School ID"),
     #    _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
-        pass
+        return await self.school_service.school_delete(school_id=school_id)
