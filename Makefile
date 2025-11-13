@@ -50,6 +50,9 @@ see-api-dev:
 dump-dev:
 	docker compose -f docker-compose-dev.yaml exec database sh -c 'pg_dump -h 127.0.0.1 --username=postgres -d postgres > dumps/$$(date +'%Y-%m-%d_%H-%M-%S').dump'
 
+seed-dev:
+	docker compose -f docker-compose-dev.yaml exec -w /core api python -m src.scripts.seed
+
 # prod
 
 start-prod:

@@ -4,4 +4,5 @@ import src.models.field_of_study  # noqa
 import src.models.degree  # noqa
 import src.models.educational_program_partner  # noqa
 import src.models.school  # noqa
-import src.models.educational_program
+import src.models.educational_program # noqa
+import src.models.user # noqa
