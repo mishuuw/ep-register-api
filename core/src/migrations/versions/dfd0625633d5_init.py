@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 63925067ce5b
+Revision ID: dfd0625633d5
 Revises:
-Create Date: 2025-11-13 08:05:15.118688
+Create Date: 2025-11-14 00:33:53.051572
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "63925067ce5b"
+revision: str = "dfd0625633d5"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -272,7 +272,10 @@ def upgrade() -> None:
             ondelete="SET NULL",
         ),
         sa.ForeignKeyConstraint(
-            ["school_id"], ["school.id"], name=op.f("fk_user_school_id_school")
+            ["school_id"],
+            ["school.id"],
+            name=op.f("fk_user_school_id_school"),
+            ondelete="SET NULL",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_user")),
     )

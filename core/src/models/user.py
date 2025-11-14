@@ -12,7 +12,7 @@ class UserOrm(BaseOrm):
     internal_number = Column(TEXT)
     
     access_level = Column(Enum(AccessLevelEnum), nullable=True)
-    school_id = Column(ForeignKey("school.id"))
+    school_id = Column(ForeignKey("school.id", ondelete="SET NULL"))
     department_id = Column(ForeignKey("department.id", ondelete="SET NULL"))
     
     is_active = Column(BOOLEAN, nullable=False, default=True)
