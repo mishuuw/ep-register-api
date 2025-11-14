@@ -45,7 +45,6 @@ class SchoolController:
     @try_rollback
     async def school_get(
         self,
-    #    _: UserSchema = Depends(token_service.admin_required),
     ) -> SchoolGetViewSchema:
         return await self.school_service.school_get()
 
@@ -55,7 +54,7 @@ class SchoolController:
     async def school_add(
         self,
         data: SchoolSchema,
-    #    _: UserSchema = Depends(token_service.admin_required),
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
         return await self.school_service.school_add(data = data)
     
@@ -63,8 +62,8 @@ class SchoolController:
     @try_rollback
     async def school_update(
         self,
-        data: SchoolUpdateSchema
-    #    _: UserSchema = Depends(token_service.admin_required),
+        data: SchoolUpdateSchema,
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
         return await self.school_service.school_update(data = data)
 
@@ -74,6 +73,6 @@ class SchoolController:
     async def school_delete(
         self,
         school_id: int = Query(..., description="School ID"),
-    #    _: UserSchema = Depends(token_service.admin_required),
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
         return await self.school_service.school_delete(school_id=school_id)

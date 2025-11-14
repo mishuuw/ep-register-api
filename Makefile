@@ -16,7 +16,7 @@ merge:
 
 start-dev:
 	docker compose -f docker-compose-dev.yaml up --build -d
-	$(SLEEP) 2
+	$(SLEEP) 5
 
 	docker compose -f docker-compose-dev.yaml exec -w /core api python -m alembic upgrade head
 

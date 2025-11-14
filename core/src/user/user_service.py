@@ -6,6 +6,7 @@ from src.common.common_exc import NotFoundHttpException
 from src.common.common_repo import CommonRepository
 from src.common.common_schema import AddViewSchema, DependencyCheckSchema, SuccessSchema
 from src.models.department import DepartmentOrm
+from src.models.field_of_study import FieldOfStudyOrm
 from src.models.school import SchoolOrm
 from src.user.user_schema import UserGetSchema, UserGetViewSchema, UserSchema, UserUpdateSchema
 from src.user.user_usecase import UserUsecase
@@ -88,6 +89,13 @@ class UserService:
                     id=data.school_id,
                 )
             )
+        if data.field_of_study_id is not None:
+            dependencies.append(
+                DependencyCheckSchema(
+                    table=FieldOfStudyOrm,
+                    id=data.field_of_study_id,
+                )
+            )
         missing = await self.common_repo.check_dependencies(dependencies)
         if missing is not True:
             raise NotFoundHttpException(
@@ -125,6 +133,13 @@ class UserService:
                     id=data.school_id,
                 )
             )
+        if data.field_of_study_id is not None:
+            dependencies.append(
+                DependencyCheckSchema(
+                    table=FieldOfStudyOrm,
+                    id=data.field_of_study_id,
+                )
+            )
         missing = await self.common_repo.check_dependencies(dependencies)
         if missing is not True:
             raise NotFoundHttpException(
@@ -142,6 +157,7 @@ class UserService:
                 is_active=data.is_active,
                 access_level=data.access_level,
                 school_id=data.school_id,
+                field_of_study_id=data.field_of_study_id,
             )
         )
         return AddViewSchema(
@@ -151,26 +167,5 @@ class UserService:
     async def user_get(
         self,
     ) -> UserGetViewSchema:
-        users = await self.common_repo.get_all_scalars(
-            UserOrm
-        )
-
-        return UserGetViewSchema(
-            count=len(users),
-            result=[
-                UserGetSchema(
-                    id=user.id,
-                    full_name=user.full_name,
-                    phone=user.phone,
-                    email=user.email,
-                    position=user.position,
-                    internal_number=user.internal_number,
-                    department_id=user.department_id,
-                    is_active=user.is_active,
-                    access_level=user.access_level,
-                    school_id=user.school_id,
-                ) for user in users
-            ],
-        )
-        
+        return await self.user_repo.user_get()
     

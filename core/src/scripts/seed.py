@@ -67,7 +67,7 @@ async def seed(session: AsyncSession) -> None:
     )
 
     # Fields of study
-    await upsert(
+    f_o_s , _ = await upsert(
         session,
         FieldOfStudyOrm,
         where={"code": "09.03.03"},
@@ -102,6 +102,7 @@ async def seed(session: AsyncSession) -> None:
             "access_level": AccessLevelEnum.manager,
             "school_id": school.id,
             "department_id": dept.id,
+            "field_of_study_id": f_o_s.id,
             "is_active": True,
         },
     )

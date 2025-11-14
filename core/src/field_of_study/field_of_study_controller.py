@@ -45,7 +45,6 @@ class FieldOfStudyController:
     @try_rollback
     async def field_of_study_get(
         self,
-    #    _: UserSchema = Depends(token_service.admin_required),
     ) -> FieldOfStudyGetViewSchema:
         return await self.field_of_study_service.field_of_study_get()
 
@@ -55,7 +54,7 @@ class FieldOfStudyController:
     async def field_of_study_add(
         self,
         data: FieldOfStudySchema,
-    #    _: UserSchema = Depends(token_service.admin_required),
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
         return await self.field_of_study_service.field_of_study_add(data=data)
     
@@ -64,7 +63,7 @@ class FieldOfStudyController:
     async def field_of_study_update(
         self,
         data: FieldOfStudyUpdateSchema,
-    #    _: UserSchema = Depends(token_service.admin_required),
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
         return await self.field_of_study_service.field_of_study_update(data=data)
 
@@ -74,6 +73,6 @@ class FieldOfStudyController:
     async def field_of_study_delete(
         self,
         field_of_study_id: int = Query(..., description="Field of Study ID"),
-    #    _: UserSchema = Depends(token_service.admin_required),
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
         return await self.field_of_study_service.field_of_study_delete(field_of_study_id=field_of_study_id)

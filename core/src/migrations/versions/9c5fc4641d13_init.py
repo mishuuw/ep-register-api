@@ -1,8 +1,8 @@
 """init
 
-Revision ID: dfd0625633d5
+Revision ID: 9c5fc4641d13
 Revises:
-Create Date: 2025-11-14 00:33:53.051572
+Create Date: 2025-11-14 00:51:56.554132
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "dfd0625633d5"
+revision: str = "9c5fc4641d13"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -250,6 +250,7 @@ def upgrade() -> None:
             nullable=True,
         ),
         sa.Column("school_id", sa.BigInteger(), nullable=True),
+        sa.Column("field_of_study_id", sa.BigInteger(), nullable=True),
         sa.Column("department_id", sa.BigInteger(), nullable=True),
         sa.Column("is_active", sa.BOOLEAN(), nullable=False),
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
@@ -269,6 +270,12 @@ def upgrade() -> None:
             ["department_id"],
             ["department.id"],
             name=op.f("fk_user_department_id_department"),
+            ondelete="SET NULL",
+        ),
+        sa.ForeignKeyConstraint(
+            ["field_of_study_id"],
+            ["field_of_study.id"],
+            name=op.f("fk_user_field_of_study_id_field_of_study"),
             ondelete="SET NULL",
         ),
         sa.ForeignKeyConstraint(

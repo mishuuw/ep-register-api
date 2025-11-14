@@ -10,13 +10,29 @@ class UserSchema(BaseModel):
     internal_number: Optional[str] = Field(..., description="User internal number")
     
     access_level: Optional[AccessLevelEnum] = Field(None, description="Access level")
+    field_of_study_id: Optional[int] = Field(None, description="Field of Study ID")
     school_id: Optional[int] = Field(None, description="School ID", le=3)
     department_id: Optional[int] = Field(None, description="Department ID")
     
     is_active: bool = Field(True, description="Is active")
     
-class UserGetSchema(UserSchema):
-    id: int = Field(..., description="User ID")    
+class UserGetSchema(BaseModel):
+    id: int = Field(..., description="User ID")
+    email: Optional[EmailStr] = Field(..., description="User email")
+    phone: Optional[str] = Field(..., description="User phone number")
+    position: Optional[str] = Field(..., description="User position")
+    full_name: Optional[str] = Field(..., description="User full name")
+    internal_number: Optional[str] = Field(..., description="User internal number")
+    
+    access_level: Optional[AccessLevelEnum] = Field(None, description="Access level")
+    field_of_study: Optional[str] = Field(
+        None, 
+        description="Field of Study code",
+        pattern='^[0-9]{2}\.[0-9]{2}\.[0-9]{2}[A-Za-z\u0400-\u04FF]*$')
+    school_title: Optional[str] = Field(None, description="School title")
+    department_title: Optional[str] = Field(None, description="Department title")
+    
+    is_active: bool = Field(True, description="Is active")    
     
 class UserGetViewSchema(BaseModel):
     count: int = Field(..., description="Total count")
@@ -31,6 +47,7 @@ class UserUpdateSchema(BaseModel):
     internal_number: Optional[str] = Field(None, description="User internal number")
     
     access_level: Optional[AccessLevelEnum] = Field(None, description="Access level")
+    field_of_study_id: Optional[int] = Field(None, description="Field of Study ID")
     school_id: Optional[int] = Field(None, description="School ID", le=3)
     department_id: Optional[int] = Field(None, description="Department ID")
     
