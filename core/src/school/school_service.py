@@ -4,7 +4,7 @@ from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_repo import CommonRepository
 from src.common.common_schema import SuccessSchema, AddViewSchema
-from src.common.common_exc import NotFoundHttpException
+from src.common.common_exc import NotFoundHttpException, WrongParametersHttpException
 from src.school.school_schema import (
     SchoolSchema,
     SchoolGetSchema,
@@ -86,7 +86,6 @@ class SchoolService:
             data: SchoolSchema
     ) -> AddViewSchema:
         school = await self.common_repo.add(
-
             SchoolOrm(
                 code = data.code,
                 title = data.title,
