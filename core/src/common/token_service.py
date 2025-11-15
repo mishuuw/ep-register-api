@@ -1,7 +1,7 @@
 from typing import Literal
-from fastapi import Depends, Header, Request
-from jwt import decode, encode
-from sqlalchemy import select
+
+from fastapi import Header, Request
+from jwt import decode
 from src.common.common_exc import (
     InvalidHttpException,
     NotAllowedHttpException,
@@ -9,9 +9,6 @@ from src.common.common_exc import (
 )
 from src.config.settings import get_settings
 from src.models.enum import AccessLevelEnum
-from src.models.user import UserOrm
-from src.user.user_schema import UserSchema
-from src.utils.db_util import get_session_obj
 
 settings = get_settings()
 
@@ -38,15 +35,10 @@ class TokenService:
             raise InvalidHttpException(name="token")
 
     async def type_required(
-        self,
-        request: Request,
-        type_req: AccessLevelEnum,
-        auth: str
+        self, request: Request, type_req: AccessLevelEnum, auth: str
     ) -> bool:
         if request.headers.get("cookie", None) is not None:
-            all_cookies = [
-                x for x in request.headers.get("cookie").split("; ")
-            ]
+            all_cookies = [x for x in request.headers.get("cookie").split("; ")]
             r_cookies = [
                 y for y in all_cookies if settings.EP_REGISTER_COOKIE_NAME in y
             ]
@@ -62,9 +54,9 @@ class TokenService:
         else:
             auth_cookie = None
             token = auth
-        
+
         data = await self.validate_token(token=token)
-        
+
         roles = data.get("roles", None)
         if not roles:
             raise NotFoundHttpException(name="user")
@@ -73,9 +65,7 @@ class TokenService:
         return True
 
     async def manager_required(
-        self,
-        request: Request,
-        auth: str = Header(None)
+        self, request: Request, auth: str = Header(None)
     ) -> bool:
         return await self.type_required(
             request=request,
@@ -84,9 +74,7 @@ class TokenService:
         )
 
     async def director_required(
-        self,
-        request: Request,
-        auth: str = Header(None)
+        self, request: Request, auth: str = Header(None)
     ) -> bool:
         return await self.type_required(
             request=request,
@@ -94,17 +82,14 @@ class TokenService:
             auth=auth,
         )
 
-    async def admin_required(
-        self,
-        request: Request,
-        auth: str = Header(None)
-    ) -> bool:
+    async def admin_required(self, request: Request, auth: str = Header(None)) -> bool:
         return await self.type_required(
             request=request,
             type_req=AccessLevelEnum.admin,
             auth=auth,
         )
-        
+
+
 token_service = TokenService(
     lang="ru",
 )

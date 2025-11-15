@@ -1,16 +1,14 @@
 import asyncio
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from src.utils.db_util import get_session
-from src.models.school import SchoolOrm
-from src.models.department import DepartmentOrm
 from src.models.degree import DegreeOrm
-from src.models.field_of_study import FieldOfStudyOrm
-from src.models.user import UserOrm
+from src.models.department import DepartmentOrm
 from src.models.enum import AccessLevelEnum
+from src.models.field_of_study import FieldOfStudyOrm
+from src.models.school import SchoolOrm
+from src.models.user import UserOrm
+from src.utils.db_util import get_session
 
 
 async def get_one(session: AsyncSession, model, **by):
@@ -40,7 +38,10 @@ async def seed(session: AsyncSession) -> None:
         session,
         SchoolOrm,
         where={"code": "9"},
-        values={"title": "Институт математики и компьютерных технологий", "title_short": "ИМКТ"},
+        values={
+            "title": "Институт математики и компьютерных технологий",
+            "title_short": "ИМКТ",
+        },
     )
 
     # Departments
@@ -67,7 +68,7 @@ async def seed(session: AsyncSession) -> None:
     )
 
     # Fields of study
-    f_o_s , _ = await upsert(
+    f_o_s, _ = await upsert(
         session,
         FieldOfStudyOrm,
         where={"code": "09.03.03"},

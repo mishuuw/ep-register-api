@@ -65,13 +65,9 @@ class NotAllowedHttpException(HTTPException):
         if name_en is None:
             name_en = name
 
-        message = (
-            f'object "{name_en}" not allowed' if name_en else "not allowed"
-        )
+        message = f'object "{name_en}" not allowed' if name_en else "not allowed"
         if lang == "ru":
-            message = (
-                f'объект "{name}" не разрешен' if name else "не разрешено"
-            )
+            message = f'объект "{name}" не разрешен' if name else "не разрешено"
         super().__init__(status_code=403, detail=message)
 
 

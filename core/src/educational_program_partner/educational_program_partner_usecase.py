@@ -1,10 +1,11 @@
-from datetime import datetime
 from typing import Literal
 
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_repo import CommonRepository
-from src.educational_program_partner.educational_program_partner_repo import EducationalProgramPartnerRepository
+from src.educational_program_partner.educational_program_partner_repo import (
+    EducationalProgramPartnerRepository,
+)
 
 
 class EducationalProgramPartnerUsecase:

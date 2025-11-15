@@ -3,15 +3,8 @@ from typing import Literal
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_repo import CommonRepository
-from src.department.department_schema import (
-    DepartmentAddSchema,
-    DepartmentGetSchema,
-    DepartmentGetViewSchema,
-)
-from src.department.department_usecase import DepartmentUsecase
 from src.department.department_repo import DepartmentRepository
-from src.models.user import UserOrm
-from src.utils.common_util import timeit
+from src.department.department_usecase import DepartmentUsecase
 
 
 class DepartmentService:

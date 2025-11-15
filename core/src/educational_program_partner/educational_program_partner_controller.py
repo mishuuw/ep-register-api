@@ -4,15 +4,16 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema
+from src.common.token_service import token_service  # noqa
+from src.config.settings import get_settings
 from src.educational_program_partner.educational_program_partner_schema import (
+    EducationalProgramPartnerAddSchema,
     EducationalProgramPartnerFilterSchema,
     EducationalProgramPartnerGetViewSchema,
-    EducationalProgramPartnerAddSchema
 )
-from src.educational_program_partner.educational_program_partner_service import EducationalProgramPartnerService
-from src.common.token_service import token_service
-from src.config.settings import get_settings
-from src.user.user_schema import UserSchema
+from src.educational_program_partner.educational_program_partner_service import (
+    EducationalProgramPartnerService,
+)
 from src.utils.common_util import try_rollback
 from src.utils.db_util import get_session_obj
 
@@ -41,38 +42,44 @@ class EducationalProgramPartnerController:
             session=session,
         )
 
-    @educational_program_partner_router.get("/get", tags=["educational_program_partner"])
+    @educational_program_partner_router.get(
+        "/get", tags=["educational_program_partner"]
+    )
     @try_rollback
     async def educational_program_partner_get(
         self,
         filter: EducationalProgramPartnerFilterSchema = Depends(),
-    #    _: UserSchema = Depends(token_service.admin_required),
+        #    _: UserSchema = Depends(token_service.admin_required),
     ) -> EducationalProgramPartnerGetViewSchema:
         pass
 
-
-    @educational_program_partner_router.post("/add", tags=["educational_program_partner"])
+    @educational_program_partner_router.post(
+        "/add", tags=["educational_program_partner"]
+    )
     @try_rollback
     async def educational_program_partner_add(
         self,
         data: EducationalProgramPartnerAddSchema,
-    #    _: UserSchema = Depends(token_service.admin_required),
+        #    _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
         pass
-    
-    @educational_program_partner_router.patch("/update", tags=["educational_program_partner"])
+
+    @educational_program_partner_router.patch(
+        "/update", tags=["educational_program_partner"]
+    )
     @try_rollback
     async def educational_program_partner_update(
         self,
-    #    _: UserSchema = Depends(token_service.admin_required),
+        #    _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
         pass
 
-
-    @educational_program_partner_router.delete("/delete", tags=["educational_program_partner"])
+    @educational_program_partner_router.delete(
+        "/delete", tags=["educational_program_partner"]
+    )
     @try_rollback
     async def educational_program_partner_delete(
         self,
-    #    _: UserSchema = Depends(token_service.admin_required),
+        #    _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
         pass

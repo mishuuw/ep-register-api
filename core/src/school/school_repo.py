@@ -1,9 +1,7 @@
-from typing import List, Literal
+from typing import Literal
 
 from fastapi import BackgroundTasks
-from sqlalchemy import and_, case, exists, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.common.common_exc import NotFoundHttpException
 from src.config.settings import get_settings
 
 settings = get_settings()

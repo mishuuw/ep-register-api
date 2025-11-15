@@ -1,6 +1,4 @@
-from datetime import datetime
 from typing import Literal
-
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_repo import CommonRepository

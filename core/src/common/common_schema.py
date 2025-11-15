@@ -1,4 +1,4 @@
-from typing import Literal, TypeVar
+from typing import TypeVar
 
 from pydantic import BaseModel, Field
 
@@ -13,6 +13,7 @@ class ErrorSchema(BaseModel):
     code: str
     detail: str
 
+
 class DependencyCheckSchema:
     def __init__(
         self,
@@ -21,6 +22,7 @@ class DependencyCheckSchema:
     ):
         self.table = table
         self.id = id
-        
+
+
 class AddViewSchema(BaseModel):
     id: int = Field(..., description="id of created entity")

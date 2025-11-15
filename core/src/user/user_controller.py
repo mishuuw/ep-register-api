@@ -4,10 +4,10 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema
-from src.user.user_service import UserService
 from src.common.token_service import token_service
 from src.config.settings import get_settings
 from src.user.user_schema import UserGetViewSchema, UserSchema, UserUpdateSchema
+from src.user.user_service import UserService
 from src.utils.common_util import try_rollback
 from src.utils.db_util import get_session_obj
 
@@ -44,7 +44,6 @@ class UserController:
     ) -> UserGetViewSchema:
         return await self.user_service.user_get()
 
-
     @user_router.post("/add", tags=["user"])
     @try_rollback
     async def user_add(
@@ -55,8 +54,7 @@ class UserController:
         return await self.user_service.user_add(
             data=data,
         )
-        
-    
+
     @user_router.patch("/update", tags=["user"])
     @try_rollback
     async def user_update(
@@ -72,7 +70,10 @@ class UserController:
     @try_rollback
     async def user_delete(
         self,
-        user_id: int = Query(...,description="User ID",),
+        user_id: int = Query(
+            ...,
+            description="User ID",
+        ),
         _: bool = Depends(token_service.admin_required),
     ) -> None:
         return await self.user_service.user_delete(

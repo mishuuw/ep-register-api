@@ -4,7 +4,7 @@ from src.models.base import BaseOrm
 
 class SchoolOrm(BaseOrm):
     __tablename__ = "school"
-    
+
     code = Column(String(3), nullable=False, unique=True)
 
     title = Column(TEXT, nullable=False)

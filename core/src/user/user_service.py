@@ -8,11 +8,14 @@ from src.common.common_schema import AddViewSchema, DependencyCheckSchema, Succe
 from src.models.department import DepartmentOrm
 from src.models.field_of_study import FieldOfStudyOrm
 from src.models.school import SchoolOrm
-from src.user.user_schema import UserGetSchema, UserGetViewSchema, UserSchema, UserUpdateSchema
-from src.user.user_usecase import UserUsecase
-from src.user.user_repo import UserRepository
 from src.models.user import UserOrm
-from src.utils.common_util import timeit
+from src.user.user_repo import UserRepository
+from src.user.user_schema import (
+    UserGetViewSchema,
+    UserSchema,
+    UserUpdateSchema,
+)
+from src.user.user_usecase import UserUsecase
 
 
 class UserService:
@@ -62,8 +65,8 @@ class UserService:
         self,
         data: UserUpdateSchema,
     ) -> AddViewSchema:
-        
-        #check user
+
+        # check user
         user = await self.common_repo.get_one(
             UserOrm,
             UserOrm.id == data.id,
@@ -72,8 +75,8 @@ class UserService:
             raise NotFoundHttpException(
                 name="User",
             )
-            
-        #check dependencies
+
+        # check dependencies
         dependencies = []
         if data.department_id is not None:
             dependencies.append(
@@ -101,23 +104,16 @@ class UserService:
             raise NotFoundHttpException(
                 name=missing.__tablename__,
             )
-        
-        #update user
+
+        # update user
         data_dict = data.model_dump(exclude_unset=True)
-        
-        await self.common_repo.update(
-            UserOrm(
-                **data_dict
-            )
-        )
-            
+        await self.common_repo.update(UserOrm(**data_dict))
         return SuccessSchema(detail="success")
 
     async def user_add(
         self,
         data: UserSchema,
     ) -> AddViewSchema:
-        
         dependencies = []
         if data.department_id is not None:
             dependencies.append(
@@ -145,7 +141,6 @@ class UserService:
             raise NotFoundHttpException(
                 name=missing.__tablename__,
             )
-        
         user = await self.common_repo.add(
             UserOrm(
                 full_name=data.full_name,
@@ -168,4 +163,3 @@ class UserService:
         self,
     ) -> UserGetViewSchema:
         return await self.user_repo.user_get()
-    

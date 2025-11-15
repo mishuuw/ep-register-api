@@ -1,16 +1,12 @@
-import string
 import sys
 import traceback
 import uuid
 from datetime import datetime, time, timezone
 from functools import wraps
-from typing import Any, Callable, List, Literal, Optional
+from typing import Any, Callable, List, Literal
 
-from deep_translator import GoogleTranslator
-from fastapi import BackgroundTasks, HTTPException
-from sqlalchemy import update
+from fastapi import HTTPException
 from src.common.common_exc import IntervalServerErrorHttpException
-from src.utils.db_util import get_session
 from src.utils.log_util import logger, traceback_logger
 
 
@@ -74,9 +70,8 @@ async def str_to_list(
     if string in ["", None]:
         return []
 
-    return [
-        to_type_func(x.strip()) for x in string.split(sep) if x.strip() != ""
-    ]
+    return [to_type_func(x.strip()) for x in string.split(sep) if x.strip() != ""]
+
 
 async def merge_lists(
     lists: List[List[Any]],
@@ -100,14 +95,10 @@ async def log(
         text = str(text)
 
     if mode == "info":
-        logger.info(
-            f"{await get_current_time()} - user_id: {user_id} - " + text
-        )
+        logger.info(f"{await get_current_time()} - user_id: {user_id} - " + text)
 
     if mode == "error":
-        logger.error(
-            f"{await get_current_time()} - user_id: {user_id} - " + text
-        )
+        logger.error(f"{await get_current_time()} - user_id: {user_id} - " + text)
 
 
 def timeit(func):
@@ -127,18 +118,18 @@ def timeit(func):
 def try_rollback(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):
-        user_in_kwargs = kwargs.get("_", None)
+        """user_in_kwargs = kwargs.get("_", None)
 
-        '''user: Optional[UserSchema] = (
+        user: Optional[UserSchema] = (
             user_in_kwargs
             if user_in_kwargs and isinstance(user_in_kwargs, UserSchema)
             else None
-        )'''
+        )"""
 
         try:
             return await func(*args, **kwargs)
         except Exception as e:
-            user_id = -1 #user.id if user else -1
+            user_id = -1  # user.id if user else -1
             log_text = f"{func.__qualname__} - {type(e).__name__} - {e}"
 
             if not isinstance(e, HTTPException):
