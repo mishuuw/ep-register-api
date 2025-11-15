@@ -3,15 +3,19 @@ from typing import Literal
 from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.common.common_schema import AddViewSchema
-from src.educational_program.educational_program_schema import (
-    EducationalProgramFilterSchema,
-    EducationalProgramGetViewSchema,
-    EducationalProgramAddSchema
-)
-from src.educational_program.educational_program_service import EducationalProgramService
+from src.common.common_schema import AddViewSchema, SuccessSchema
 from src.common.token_service import token_service
 from src.config.settings import get_settings
+from src.educational_program.educational_program_schema import (
+    EducationalProgramGetFilterSchema,
+    EducationalProgramGetViewSchema,
+    EducationalProgramSchema,
+    EducationalProgramUpdateSchema,
+)
+from src.educational_program.educational_program_service import (
+    EducationalProgramService,
+)
+from src.models.enum import DeleteBehaviorEnum
 from src.user.user_schema import UserSchema
 from src.utils.common_util import try_rollback
 from src.utils.db_util import get_session_obj
@@ -41,38 +45,54 @@ class EducationalProgramController:
             session=session,
         )
 
+    @educational_program_router.get("/story", tags=["educational_program"])
+    @try_rollback
+    async def educational_program_story(
+        self,
+        educational_program_id: int = Query(..., description="Educational program ID"),
+        _: UserSchema = Depends(token_service.admin_required),
+    ):
+        pass
+
     @educational_program_router.get("/get", tags=["educational_program"])
     @try_rollback
     async def educational_program_get(
         self,
-        filter: EducationalProgramFilterSchema = Depends(),
-    #    _: UserSchema = Depends(token_service.admin_required),
+        filter: EducationalProgramGetFilterSchema = Depends(),
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> EducationalProgramGetViewSchema:
         pass
-
 
     @educational_program_router.post("/add", tags=["educational_program"])
     @try_rollback
     async def educational_program_add(
         self,
-        data: EducationalProgramAddSchema,
-    #    _: UserSchema = Depends(token_service.admin_required),
+        data: EducationalProgramSchema,
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
         pass
-    
+
     @educational_program_router.patch("/update", tags=["educational_program"])
     @try_rollback
     async def educational_program_update(
         self,
-    #    _: UserSchema = Depends(token_service.admin_required),
-    ) -> None:
+        data: EducationalProgramUpdateSchema,
+        _: UserSchema = Depends(token_service.admin_required),
+    ) -> SuccessSchema:
         pass
-
 
     @educational_program_router.delete("/delete", tags=["educational_program"])
     @try_rollback
     async def educational_program_delete(
         self,
-    #    _: UserSchema = Depends(token_service.admin_required),
-    ) -> None:
+        educational_program_id: int,
+        delete_behavior: DeleteBehaviorEnum = Query(
+            default=DeleteBehaviorEnum.RESTRICT,
+            description="""Поведение дочерних ОП при удалении: RESTRICT -
+            запретить удаление, если есть дочерние ОП; CASCADE - удалить все
+            дочерние ОП; SET NULL - установить значение NULL в дочерних ОП
+            (Теперь эти ОП будут считаться начальными в своей иерархии)""",
+        ),
+        _: UserSchema = Depends(token_service.admin_required),
+    ) -> SuccessSchema:
         pass

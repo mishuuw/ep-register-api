@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 9c5fc4641d13
+Revision ID: 46e6f9822e57
 Revises:
-Create Date: 2025-11-14 00:51:56.554132
+Create Date: 2025-11-15 08:55:39.641508
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "9c5fc4641d13"
+revision: str = "46e6f9822e57"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -150,9 +150,8 @@ def upgrade() -> None:
         "educational_program",
         sa.Column("title", sa.TEXT(), nullable=False),
         sa.Column("parent_id", sa.Integer(), nullable=True),
-        sa.Column("school_code", sa.String(length=3), nullable=True),
-        sa.Column("field_of_study_code", sa.String(length=8), nullable=True),
-        sa.Column("degree_id", sa.Integer(), nullable=False),
+        sa.Column("school_id", sa.Integer(), nullable=True),
+        sa.Column("degree_id", sa.Integer(), nullable=True),
         sa.Column("partner_id", sa.Integer(), nullable=True),
         sa.Column(
             "network_form",
@@ -212,13 +211,6 @@ def upgrade() -> None:
             name=op.f("fk_educational_program_degree_id_degree"),
         ),
         sa.ForeignKeyConstraint(
-            ["field_of_study_code"],
-            ["field_of_study.code"],
-            name=op.f(
-                "fk_educational_program_field_of_study_code_field_of_study"
-            ),
-        ),
-        sa.ForeignKeyConstraint(
             ["parent_id"],
             ["educational_program.id"],
             name=op.f("fk_educational_program_parent_id_educational_program"),
@@ -231,9 +223,9 @@ def upgrade() -> None:
             ),
         ),
         sa.ForeignKeyConstraint(
-            ["school_code"],
-            ["school.code"],
-            name=op.f("fk_educational_program_school_code_school"),
+            ["school_id"],
+            ["school.id"],
+            name=op.f("fk_educational_program_school_id_school"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_educational_program")),
     )
@@ -288,9 +280,10 @@ def upgrade() -> None:
     )
     op.create_table(
         "educational_program_active",
-        sa.Column("educational_program_id", sa.Integer(), nullable=True),
-        sa.Column("start_year", sa.Integer(), nullable=True),
-        sa.Column("end_year", sa.Integer(), nullable=True),
+        sa.Column("educational_program_id", sa.Integer(), nullable=False),
+        sa.Column("field_of_study_id", sa.Integer(), nullable=False),
+        sa.Column("start_year", sa.Integer(), nullable=False),
+        sa.Column("end_year", sa.Integer(), nullable=False),
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
         sa.Column(
             "created_at",
@@ -311,8 +304,19 @@ def upgrade() -> None:
                 "fk_educational_program_active_educational_program_id_educational_program"
             ),
         ),
+        sa.ForeignKeyConstraint(
+            ["field_of_study_id"],
+            ["field_of_study.id"],
+            name=op.f(
+                "fk_educational_program_active_field_of_study_id_field_of_study"
+            ),
+        ),
         sa.PrimaryKeyConstraint(
             "id", name=op.f("pk_educational_program_active")
+        ),
+        sa.UniqueConstraint(
+            "educational_program_id",
+            name=op.f("uq_educational_program_active_educational_program_id"),
         ),
     )
     # ### end Alembic commands ###

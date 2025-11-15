@@ -3,15 +3,12 @@ from typing import Literal
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_repo import CommonRepository
-from src.educational_program.educational_program_schema import (
-    EducationalProgramAddSchema,
-    EducationalProgramGetSchema,
-    EducationalProgramGetViewSchema,
+from src.educational_program.educational_program_repo import (
+    EducationalProgramRepository,
 )
-from src.educational_program.educational_program_usecase import EducationalProgramUsecase
-from src.educational_program.educational_program_repo import EducationalProgramRepository
-from src.models.user import UserOrm
-from src.utils.common_util import timeit
+from src.educational_program.educational_program_usecase import (
+    EducationalProgramUsecase,
+)
 
 
 class EducationalProgramService:
