@@ -28,11 +28,11 @@ class UserGetSchema(BaseModel):
     internal_number: Optional[str] = Field(..., description="User internal number")
 
     access_level: Optional[AccessLevelEnum] = Field(None, description="Access level")
-    field_of_study: Optional[str] = Field(
+    """field_of_study: Optional[str] = Field(
         None,
         description="Field of Study code",
         pattern="^[0-9]{2}\.[0-9]{2}\.[0-9]{2}[A-Za-z\u0400-\u04ff]*$",  # noqa
-    )
+    )"""  # TODO: FIX AFTER educational_program implementation
     school_title: Optional[str] = Field(None, description="School title")
     department_title: Optional[str] = Field(None, description="Department title")
 

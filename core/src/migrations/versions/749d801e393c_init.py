@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 921f2d753957
+Revision ID: 749d801e393c
 Revises:
-Create Date: 2025-11-15 09:23:32.318067
+Create Date: 2025-11-15 09:47:05.924205
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "921f2d753957"
+revision: str = "749d801e393c"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -99,12 +99,7 @@ def upgrade() -> None:
             comment="Format: XX.XX.XX",
         ),
         sa.Column("title", sa.TEXT(), nullable=False),
-        sa.Column(
-            "title_short",
-            sa.String(length=5),
-            nullable=False,
-            comment="Format: XX.XX.XXTTTTT, ex. 09.03.03ру; 'ру' = title_short",
-        ),
+        sa.Column("title_short", sa.String(length=5), nullable=False),
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
         sa.Column(
             "created_at",
@@ -149,6 +144,7 @@ def upgrade() -> None:
     op.create_table(
         "educational_program",
         sa.Column("title", sa.TEXT(), nullable=False),
+        sa.Column("title_short", sa.String(length=5), nullable=True),
         sa.Column("parent_id", sa.Integer(), nullable=True),
         sa.Column("school_id", sa.Integer(), nullable=True),
         sa.Column("degree_id", sa.Integer(), nullable=True),

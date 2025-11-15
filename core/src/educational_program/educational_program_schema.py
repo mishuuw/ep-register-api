@@ -49,6 +49,39 @@ class EducationalProgramSchema(BaseModel):
     description: Optional[str] = Field(None, description="Description")
 
 
+class EducationalProgramGetSchema(EducationalProgramSchema):
+    title: str = Field(..., description="Title of the educational program")
+
+    school_title: Optional[str] = Field(None, description="School title")
+    degree_title: Optional[str] = Field(None, description="Degree title")
+    partner_title: Optional[str] = Field(None, description="Partner title")
+    id: int = Field(..., description="Educational Program ID")
+    network_form: Optional[NetworkFormEnum] = Field(None, description="Network form")
+    educational_form: Optional[EducationalFormEnum] = Field(
+        None, description="Educational form"
+    )
+    educational_standart_type: Optional[EducationalStandartEnum] = Field(
+        None, description="Educational standard type"
+    )
+
+    language: Optional[EducationalProgramLanguageTypeEnum] = Field(
+        None, description="Language"
+    )
+    language_hours: Optional[int] = Field(None, description="Language hours")
+
+    curriculum_number: Optional[str] = Field(None, description="Curriculum number")
+    standard_duration_months: Optional[int] = Field(
+        None, description="Standard duration in months"
+    )
+    poa_accreditation_expiry: Optional[date] = Field(
+        None, description="POA accreditation expiry date"
+    )
+    state_accreditation_expiry: Optional[date] = Field(
+        None, description="State accreditation expiry date"
+    )
+    description: Optional[str] = Field(None, description="Description")
+
+
 class EducationalProgramUpdateSchema(EducationalProgramSchema):
     title: Optional[str] = Field(None, description="Title of the educational program")
     is_active: Optional[bool] = Field(
@@ -60,7 +93,7 @@ class EducationalProgramAddSchema(EducationalProgramSchema):
     is_active: bool = Field(..., description="Is the educational program active")
 
 
-class EducationalProgramGetSchema(EducationalProgramSchema):
+class EducationalProgramIdSchema(EducationalProgramSchema):
     id: int = Field(..., description="Educational Program ID")
 
 
@@ -88,12 +121,12 @@ class EducationalProgramActiveViewSchema(BaseModel):
 
 
 # Схемы для иерархии ОП
-class EducationalProgramHierarchySchema(EducationalProgramGetSchema):
+class EducationalProgramHierarchySchema(EducationalProgramIdSchema):
     parent: Optional[EducationalProgramHierarchySchema] = Field(
         None, description="Parent educational program"
     )
     children: Optional[List[EducationalProgramHierarchySchema]] = Field(
-        None, default_factory=list, description="Child educational programs"
+        default_factory=list, description="Child educational programs"
     )
     is_active: bool = Field(..., description="Is educational program active")
     field_of_study_id: Optional[int] = Field(None, description="Field of Study ID")

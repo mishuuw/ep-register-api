@@ -5,6 +5,7 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     Integer,
+    String,
     UniqueConstraint,
 )
 from src.models.base import BaseOrm
@@ -40,6 +41,7 @@ class EducationalProgramOrm(BaseOrm):
     __tablename__ = "educational_program"
 
     title = Column(TEXT, nullable=False)
+    title_short = Column(String(5))
 
     parent_id = Column(Integer, ForeignKey("educational_program.id"))
     school_id = Column(Integer, ForeignKey("school.id"))
