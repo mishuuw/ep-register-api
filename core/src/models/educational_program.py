@@ -5,6 +5,7 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     Integer,
+    UniqueConstraint,
 )
 from src.models.base import BaseOrm
 from src.models.enum import (
@@ -17,9 +18,17 @@ from src.models.enum import (
 
 class EducationalProgramActiveOrm(BaseOrm):
     __tablename__ = "educational_program_active"
+    __table_args__ = (
+        UniqueConstraint(
+            "field_of_study_id",
+            "start_year",
+            "end_year",
+            name="uq_field_of_study_start_end",
+        ),
+    )
 
     educational_program_id = Column(
-        Integer, ForeignKey("educational_program.id"), unique=True, nullable=False
+        Integer, ForeignKey("educational_program.id"), nullable=False
     )
     field_of_study_id = Column(Integer, ForeignKey("field_of_study.id"), nullable=False)
 

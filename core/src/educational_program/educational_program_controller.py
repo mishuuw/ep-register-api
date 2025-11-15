@@ -7,9 +7,10 @@ from src.common.common_schema import AddViewSchema, SuccessSchema
 from src.common.token_service import token_service
 from src.config.settings import get_settings
 from src.educational_program.educational_program_schema import (
+    EducationalProgramAddSchema,
     EducationalProgramGetFilterSchema,
     EducationalProgramGetViewSchema,
-    EducationalProgramSchema,
+    EducationalProgramHierarchyViewSchema,
     EducationalProgramUpdateSchema,
 )
 from src.educational_program.educational_program_service import (
@@ -45,13 +46,13 @@ class EducationalProgramController:
             session=session,
         )
 
-    @educational_program_router.get("/story", tags=["educational_program"])
+    @educational_program_router.get("/hierarchy", tags=["educational_program"])
     @try_rollback
-    async def educational_program_story(
+    async def educational_program_hierarchy(
         self,
         educational_program_id: int = Query(..., description="Educational program ID"),
         _: UserSchema = Depends(token_service.admin_required),
-    ):
+    ) -> EducationalProgramHierarchyViewSchema:
         pass
 
     @educational_program_router.get("/get", tags=["educational_program"])
@@ -67,7 +68,7 @@ class EducationalProgramController:
     @try_rollback
     async def educational_program_add(
         self,
-        data: EducationalProgramSchema,
+        data: EducationalProgramAddSchema,
         _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
         pass

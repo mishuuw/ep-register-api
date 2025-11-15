@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 46e6f9822e57
+Revision ID: 921f2d753957
 Revises:
-Create Date: 2025-11-15 08:55:39.641508
+Create Date: 2025-11-15 09:23:32.318067
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "46e6f9822e57"
+revision: str = "921f2d753957"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -315,8 +315,10 @@ def upgrade() -> None:
             "id", name=op.f("pk_educational_program_active")
         ),
         sa.UniqueConstraint(
-            "educational_program_id",
-            name=op.f("uq_educational_program_active_educational_program_id"),
+            "field_of_study_id",
+            "start_year",
+            "end_year",
+            name="uq_field_of_study_start_end",
         ),
     )
     # ### end Alembic commands ###
