@@ -7,6 +7,8 @@ from src.educational_program.educational_program_repo import (
     EducationalProgramRepository,
 )
 from src.educational_program.educational_program_schema import (
+    EducationalProgramActiveViewSchema,
+    EducationalProgramGetFilterSchema,
     EducationalProgramGetViewSchema,
 )
 from src.educational_program.educational_program_usecase import (
@@ -36,6 +38,16 @@ class EducationalProgramService:
             back=back,
             session=session,
         )
+
+    async def educational_program_active_get(
+        self,
+        filter: EducationalProgramGetFilterSchema,
+    ) -> EducationalProgramActiveViewSchema:
+        result = await self.educational_program_repo.educational_program_active_get(
+            filter=filter,
+        )
+
+        return result
 
     async def educational_program_get(
         self,

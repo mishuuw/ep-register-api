@@ -48,7 +48,6 @@ class EducationalProgramOrm(BaseOrm):
 
     # accreditation_certificate_id = Column(Integer, ForeignKey("accreditation_certificate.id")) # noqa
     degree_id = Column(Integer, ForeignKey("degree.id"))
-    partner_id = Column(Integer, ForeignKey("educational_program_partner.id"))
 
     network_form = Column(Enum(NetworkFormEnum))
     educational_form = Column(Enum(EducationalFormEnum))
@@ -57,8 +56,26 @@ class EducationalProgramOrm(BaseOrm):
     language = Column(Enum(EducationalProgramLanguageTypeEnum))
     language_hours = Column(Integer)
 
-    curriculum_number = Column(TEXT)
     standard_duration_months = Column(Integer)
+    poa_accreditation_company = Column(TEXT)
     poa_accreditation_expiry = Column(Date)
     state_accreditation_expiry = Column(Date)
     description = Column(TEXT)
+
+
+class EducationalProgramToPartnerOrm(BaseOrm):
+    __tablename__ = "educational_program_to_partner"
+    __table_args__ = (
+        UniqueConstraint(
+            "educational_program_id",
+            "partner_id",
+            name="uq_educational_program_partner",
+        ),
+    )
+
+    educational_program_id = Column(
+        Integer, ForeignKey("educational_program.id"), nullable=False
+    )
+    partner_id = Column(
+        Integer, ForeignKey("educational_program_partner.id"), nullable=False
+    )

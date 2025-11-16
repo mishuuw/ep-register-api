@@ -71,7 +71,9 @@ class EducationalProgramController:
         filter: EducationalProgramGetFilterSchema = Depends(),
         _: UserSchema = Depends(token_service.admin_required),
     ) -> EducationalProgramActiveViewSchema:
-        pass
+        return await self.educational_program_service.educational_program_active_get(
+            filter=filter,
+        )
 
     @educational_program_router.post("/add", tags=["educational_program"])
     @try_rollback

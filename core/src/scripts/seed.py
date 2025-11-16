@@ -106,19 +106,18 @@ async def seed(session: AsyncSession) -> None:
     edu_program, _ = await upsert(
         session,
         EducationalProgramOrm,
-        where={"title": "Прикладная информатика (основная программа)"},
+        where={"title": "Разработка и управление цифровыми продуктами"},
         values={
-            "title_short": "ПИ",
+            "title_short": "ру",
             "school_id": school.id,
             "degree_id": (await get_one(session, DegreeOrm, title="Бакалавр")).id,
-            "partner_id": partner_oo.id,
             "network_form": NetworkFormEnum.FEFU_BASIC,
             "educational_form": EducationalFormEnum.OFFLINE,
             "educational_standard_type": EducationalstandardEnum.FGOS_VO_3_PLUS,
             "language": EducationalProgramLanguageTypeEnum.RUSSIAN,
             "language_hours": 72,
-            "curriculum_number": "ПИ-09.03.03-2025",
             "standard_duration_months": 48,
+            "poa_accreditation_company": "Аккредитационная компания ООО",
             "poa_accreditation_expiry": date(2030, 6, 30),
             "state_accreditation_expiry": date(2032, 12, 31),
             "description": """Базовая образовательная программа по направлению
@@ -126,8 +125,21 @@ async def seed(session: AsyncSession) -> None:
         },
     )
 
-    # Ensure program is flushed so it has an ID before active period
+    # Ensure program is flushed so it has an ID before relations
     await session.flush()
+
+    # Link educational program to partner via junction table
+    from src.models.educational_program import EducationalProgramToPartnerOrm
+
+    await upsert(
+        session,
+        EducationalProgramToPartnerOrm,
+        where={
+            "educational_program_id": edu_program.id,
+            "partner_id": partner_oo.id,
+        },
+        values={},
+    )
 
     # Educational program active period
     await upsert(

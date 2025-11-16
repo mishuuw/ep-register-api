@@ -12,77 +12,48 @@ from src.models.enum import (
 )
 
 
+class EducationalProgramCoreFields(BaseModel):
+    network_form: Optional[NetworkFormEnum] = Field(None, description="Network form")
+    educational_form: Optional[EducationalFormEnum] = Field(
+        None, description="Educational form"
+    )
+    educational_standard_type: Optional[EducationalstandardEnum] = Field(
+        None, description="Educational standard type"
+    )
+    language: Optional[EducationalProgramLanguageTypeEnum] = Field(
+        None, description="Language"
+    )
+    language_hours: Optional[int] = Field(None, description="Language hours")
+    standard_duration_months: Optional[int] = Field(
+        None, description="Standard duration in months"
+    )
+    poa_accreditation_company: Optional[str] = Field(
+        None, description="POA accreditation company"
+    )
+    poa_accreditation_expiry: Optional[date] = Field(
+        None, description="POA accreditation expiry date"
+    )
+    state_accreditation_expiry: Optional[date] = Field(
+        None, description="State accreditation expiry date"
+    )
+    description: Optional[str] = Field(None, description="Description")
+
+
 # Общие схемы
-class EducationalProgramSchema(BaseModel):
+class EducationalProgramSchema(EducationalProgramCoreFields):
     title: str = Field(..., description="Title of the educational program")
 
-    school_id: Optional[int] = Field(None, description="School id")
-    degree_id: Optional[int] = Field(None, description="Degree id")
-    partner_id: Optional[int] = Field(None, description="Partner id")
 
-    # accreditation_certificate_id = Column(Integer,
-    # ForeignKey("accreditation_certificate.id"))
-
-    network_form: Optional[NetworkFormEnum] = Field(None, description="Network form")
-    educational_form: Optional[EducationalFormEnum] = Field(
-        None, description="Educational form"
-    )
-    educational_standard_type: Optional[EducationalstandardEnum] = Field(
-        None, description="Educational standard type"
-    )
-
-    language: Optional[EducationalProgramLanguageTypeEnum] = Field(
-        None, description="Language"
-    )
-    language_hours: Optional[int] = Field(None, description="Language hours")
-
-    curriculum_number: Optional[str] = Field(None, description="Curriculum number")
-    standard_duration_months: Optional[int] = Field(
-        None, description="Standard duration in months"
-    )
-    poa_accreditation_expiry: Optional[date] = Field(
-        None, description="POA accreditation expiry date"
-    )
-    state_accreditation_expiry: Optional[date] = Field(
-        None, description="State accreditation expiry date"
-    )
-    description: Optional[str] = Field(None, description="Description")
-
-
-class EducationalProgramGetSchema(BaseModel):
-    title: str = Field(..., description="Title of the educational program")
-
+class EducationalProgramGetSchema(EducationalProgramSchema):
+    title_short: Optional[str] = Field(None, description="Short Title")
     school_title: Optional[str] = Field(None, description="School title")
+    school_code: Optional[str] = Field(None, description="School code")
     degree_title: Optional[str] = Field(None, description="Degree title")
-    partner_title: Optional[str] = Field(None, description="Partner title")
+    partner_titles: Optional[List[str]] = Field(None, description="Partner titles")
     id: int = Field(..., description="Educational Program ID")
-    network_form: Optional[NetworkFormEnum] = Field(None, description="Network form")
-    educational_form: Optional[EducationalFormEnum] = Field(
-        None, description="Educational form"
-    )
-    educational_standard_type: Optional[EducationalstandardEnum] = Field(
-        None, description="Educational standard type"
-    )
-
-    language: Optional[EducationalProgramLanguageTypeEnum] = Field(
-        None, description="Language"
-    )
-    language_hours: Optional[int] = Field(None, description="Language hours")
-
-    curriculum_number: Optional[str] = Field(None, description="Curriculum number")
-    standard_duration_months: Optional[int] = Field(
-        None, description="Standard duration in months"
-    )
-    poa_accreditation_expiry: Optional[date] = Field(
-        None, description="POA accreditation expiry date"
-    )
-    state_accreditation_expiry: Optional[date] = Field(
-        None, description="State accreditation expiry date"
-    )
-    description: Optional[str] = Field(None, description="Description")
 
 
-class EducationalProgramUpdateSchema(EducationalProgramSchema):
+class EducationalProgramUpdateSchema(EducationalProgramCoreFields):
     title: Optional[str] = Field(None, description="Title of the educational program")
     is_active: Optional[bool] = Field(
         None, description="Is the educational program active"
@@ -108,7 +79,8 @@ class EducationalProgramGetViewSchema(BaseModel):
 
 # Схемы для активных ОП
 class EducationalProgramActiveSchema(EducationalProgramGetSchema):
-    field_of_study_id: int = Field(..., description="Field of Study ID")
+    field_of_study_title: str = Field(..., description="Field of Study Title")
+    field_of_study_code: str = Field(..., description="Field of Study Code")
     start_year: int = Field(..., description="Start year")
     end_year: int = Field(..., description="End year")
 
@@ -125,17 +97,17 @@ class EducationalProgramHierarchySchema(EducationalProgramGetSchema):
     parent: Optional[EducationalProgramHierarchySchema] = Field(
         None, description="Parent educational program"
     )
-    children: Optional[List[EducationalProgramHierarchySchema]] = Field(
+    children: List[EducationalProgramHierarchySchema] = Field(
         default_factory=list, description="Child educational programs"
     )
     is_active: bool = Field(..., description="Is educational program active")
-    field_of_study_id: Optional[int] = Field(None, description="Field of Study ID")
+    field_of_study: Optional[int] = Field(None, description="Field of Study ID")
     start_year: Optional[int] = Field(None, description="Start year")
     end_year: Optional[int] = Field(None, description="End year")
 
 
 class EducationalProgramHierarchyViewSchema(BaseModel):
     count: int = Field(..., description="Total count")
-    result: EducationalProgramHierarchySchema = Field(
+    result: List[EducationalProgramHierarchySchema] = Field(
         ..., description="Hierarchy of educational programs"
     )
