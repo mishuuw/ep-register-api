@@ -95,7 +95,9 @@ class EducationalProgramController:
         data: EducationalProgramUpdateSchema,
         _: UserSchema = Depends(token_service.admin_required),
     ) -> SuccessSchema:
-        pass
+        return await self.educational_program_service.educational_program_update(
+            data=data,
+        )
 
     @educational_program_router.delete("/delete", tags=["educational_program"])
     @try_rollback

@@ -45,7 +45,7 @@ class EducationalProgramSchema(EducationalProgramCoreFields):
 
 
 class EducationalProgramGetSchema(EducationalProgramSchema):
-    title_short: Optional[str] = Field(None, description="Short Title")
+    title_short: Optional[str] = Field(None, description="Short Title", max_length=5)
     school_title: Optional[str] = Field(None, description="School title")
     school_code: Optional[str] = Field(None, description="School code")
     degree_title: Optional[str] = Field(None, description="Degree title")
@@ -53,11 +53,25 @@ class EducationalProgramGetSchema(EducationalProgramSchema):
     id: int = Field(..., description="Educational Program ID")
 
 
+# NOTE: FIELD NAMES SHOULD ABSOLUTELY MATCH DB FIELD NAMING noqa
 class EducationalProgramUpdateSchema(EducationalProgramCoreFields):
+    title_short: Optional[str] = Field(None, description="Short Title", max_length=5)
+    id: int = Field(..., description="Educational Program ID")
     title: Optional[str] = Field(None, description="Title of the educational program")
     is_active: Optional[bool] = Field(
         None, description="Is the educational program active"
     )
+    field_of_study_id: Optional[int] = Field(
+        None, description="Field of Study ID for filtering"
+    )
+    partner_ids: Optional[List[int]] = Field(
+        default_factory=list, description="List of partner IDs"
+    )
+    start_year: Optional[int] = Field(None, description="Start year for filtering")
+    end_year: Optional[int] = Field(None, description="End year for filtering")
+    parent_id: Optional[int] = Field(None, description="Parent educational program ID")
+    school_id: Optional[int] = Field(None, description="School ID")
+    degree_id: Optional[int] = Field(None, description="Degree ID")
 
 
 class EducationalProgramAddSchema(EducationalProgramSchema):
@@ -67,6 +81,9 @@ class EducationalProgramAddSchema(EducationalProgramSchema):
     title_short: Optional[str] = Field(None, description="Short Title")
     field_of_study_id: Optional[int] = Field(
         None, description="Field of Study ID for filtering"
+    )
+    partner_ids: Optional[List[int]] = Field(
+        default_factory=list, description="List of partner IDs"
     )
     start_year: Optional[int] = Field(None, description="Start year for filtering")
     end_year: Optional[int] = Field(None, description="End year for filtering")
