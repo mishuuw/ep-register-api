@@ -61,7 +61,18 @@ class EducationalProgramUpdateSchema(EducationalProgramCoreFields):
 
 
 class EducationalProgramAddSchema(EducationalProgramSchema):
-    is_active: bool = Field(..., description="Is the educational program active")
+    parent_id: Optional[int] = Field(None, description="Parent educational program ID")
+    school_id: Optional[int] = Field(None, description="School ID")
+    degree_id: Optional[int] = Field(None, description="Degree ID")
+    title_short: Optional[str] = Field(None, description="Short Title")
+    field_of_study_id: Optional[int] = Field(
+        None, description="Field of Study ID for filtering"
+    )
+    start_year: Optional[int] = Field(None, description="Start year for filtering")
+    end_year: Optional[int] = Field(None, description="End year for filtering")
+    is_active: Optional[bool] = Field(
+        False, description="Is the educational program active"
+    )
 
 
 class EducationalProgramGetFilterSchema(BaseModel):

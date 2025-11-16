@@ -84,7 +84,9 @@ class EducationalProgramController:
         data: EducationalProgramAddSchema,
         _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
-        pass
+        return await self.educational_program_service.educational_program_add(
+            data=data,
+        )
 
     @educational_program_router.patch("/update", tags=["educational_program"])
     @try_rollback
