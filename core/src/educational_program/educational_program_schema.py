@@ -94,6 +94,7 @@ class EducationalProgramActiveViewSchema(BaseModel):
 
 # Схемы для иерархии ОП
 class EducationalProgramHierarchySchema(EducationalProgramGetSchema):
+    parent_id: Optional[int] = Field(None, description="Parent educational program ID")
     parent: Optional[EducationalProgramHierarchySchema] = Field(
         None, description="Parent educational program"
     )
@@ -101,7 +102,8 @@ class EducationalProgramHierarchySchema(EducationalProgramGetSchema):
         default_factory=list, description="Child educational programs"
     )
     is_active: bool = Field(..., description="Is educational program active")
-    field_of_study: Optional[int] = Field(None, description="Field of Study ID")
+    field_of_study_title: Optional[str] = Field(..., description="Field of Study Title")
+    field_of_study_code: Optional[str] = Field(..., description="Field of Study Code")
     start_year: Optional[int] = Field(None, description="Start year")
     end_year: Optional[int] = Field(None, description="End year")
 

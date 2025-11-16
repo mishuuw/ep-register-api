@@ -17,6 +17,7 @@ from src.models.enum import (
 from src.models.educational_program import (
     EducationalProgramActiveOrm,
     EducationalProgramOrm,
+    EducationalProgramToPartnerOrm,
 )
 from src.models.educational_program_partner import EducationalProgramPartnerOrm
 from src.models.field_of_study import FieldOfStudyOrm
@@ -81,6 +82,8 @@ async def seed(session: AsyncSession) -> None:
         values={},
     )
 
+    bachelor_degree = await get_one(session, DegreeOrm, title="Бакалавр")
+
     # Fields of study
     f_o_s, _ = await upsert(
         session,
@@ -102,15 +105,39 @@ async def seed(session: AsyncSession) -> None:
 
     await session.flush()
 
-    # Educational programs
-    edu_program, _ = await upsert(
+    # Educational programs linked via parent-child relationship
+    base_program, _ = await upsert(
         session,
         EducationalProgramOrm,
-        where={"title": "Разработка и управление цифровыми продуктами"},
+        where={"title": "Цифровые системы: фундамент"},
         values={
-            "title_short": "ру",
+            "title_short": "CSF",
             "school_id": school.id,
-            "degree_id": (await get_one(session, DegreeOrm, title="Бакалавр")).id,
+            "degree_id": bachelor_degree.id,
+            "network_form": NetworkFormEnum.FEFU_BASIC,
+            "educational_form": EducationalFormEnum.OFFLINE,
+            "educational_standard_type": EducationalstandardEnum.FGOS_VO_3_PLUS,
+            "language": EducationalProgramLanguageTypeEnum.RUSSIAN,
+            "language_hours": 64,
+            "standard_duration_months": 48,
+            "poa_accreditation_company": "Аккредитационная компания ООО",
+            "poa_accreditation_expiry": date(2030, 6, 30),
+            "state_accreditation_expiry": date(2032, 12, 31),
+            "description": "Фундаментальная подготовка по цифровым системам.",
+        },
+    )
+
+    await session.flush()
+
+    core_program, _ = await upsert(
+        session,
+        EducationalProgramOrm,
+        where={"title": "Цифровые системы: ядро продуктов"},
+        values={
+            "title_short": "CSC",
+            "parent_id": base_program.id,
+            "school_id": school.id,
+            "degree_id": bachelor_degree.id,
             "network_form": NetworkFormEnum.FEFU_BASIC,
             "educational_form": EducationalFormEnum.OFFLINE,
             "educational_standard_type": EducationalstandardEnum.FGOS_VO_3_PLUS,
@@ -120,33 +147,54 @@ async def seed(session: AsyncSession) -> None:
             "poa_accreditation_company": "Аккредитационная компания ООО",
             "poa_accreditation_expiry": date(2030, 6, 30),
             "state_accreditation_expiry": date(2032, 12, 31),
-            "description": """Базовая образовательная программа по направлению
-            Прикладная информатика.""",
+            "description": "Программа ядра цифровых продуктов с упором на практику.",
         },
     )
 
-    # Ensure program is flushed so it has an ID before relations
     await session.flush()
 
-    # Link educational program to partner via junction table
-    from src.models.educational_program import EducationalProgramToPartnerOrm
-
-    await upsert(
+    advanced_program, _ = await upsert(
         session,
-        EducationalProgramToPartnerOrm,
-        where={
-            "educational_program_id": edu_program.id,
-            "partner_id": partner_oo.id,
+        EducationalProgramOrm,
+        where={"title": "Цифровые системы: управление и рост"},
+        values={
+            "title_short": "CSM",
+            "parent_id": core_program.id,
+            "school_id": school.id,
+            "degree_id": bachelor_degree.id,
+            "network_form": NetworkFormEnum.FEFU_BASIC,
+            "educational_form": EducationalFormEnum.OFFLINE,
+            "educational_standard_type": EducationalstandardEnum.FGOS_VO_3_PLUS,
+            "language": EducationalProgramLanguageTypeEnum.RUSSIAN,
+            "language_hours": 68,
+            "standard_duration_months": 48,
+            "poa_accreditation_company": "Аккредитационная компания ООО",
+            "poa_accreditation_expiry": date(2030, 6, 30),
+            "state_accreditation_expiry": date(2032, 12, 31),
+            "description": "Продвинутая траектория по управлению цифровыми решениями.",
         },
-        values={},
     )
+
+    await session.flush()
+
+    # Link educational programs to a partner via junction table
+    for program in (base_program, core_program, advanced_program):
+        await upsert(
+            session,
+            EducationalProgramToPartnerOrm,
+            where={
+                "educational_program_id": program.id,
+                "partner_id": partner_oo.id,
+            },
+            values={},
+        )
 
     # Educational program active period
     await upsert(
         session,
         EducationalProgramActiveOrm,
         where={
-            "educational_program_id": edu_program.id,
+            "educational_program_id": core_program.id,
             "field_of_study_id": f_o_s.id,
             "start_year": 2025,
             "end_year": 2029,

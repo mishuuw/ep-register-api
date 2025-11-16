@@ -10,6 +10,7 @@ from src.educational_program.educational_program_schema import (
     EducationalProgramActiveViewSchema,
     EducationalProgramGetFilterSchema,
     EducationalProgramGetViewSchema,
+    EducationalProgramHierarchyViewSchema,
 )
 from src.educational_program.educational_program_usecase import (
     EducationalProgramUsecase,
@@ -37,6 +38,14 @@ class EducationalProgramService:
             lang=lang,
             back=back,
             session=session,
+        )
+
+    async def educational_program_hierarchy(
+        self,
+        educational_program_id: int,
+    ) -> EducationalProgramHierarchyViewSchema:
+        return await self.educational_program_repo.educational_program_hierarchy(
+            educational_program_id=educational_program_id,
         )
 
     async def educational_program_active_get(

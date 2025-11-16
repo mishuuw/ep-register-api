@@ -54,7 +54,9 @@ class EducationalProgramController:
         educational_program_id: int = Query(..., description="Educational program ID"),
         _: UserSchema = Depends(token_service.admin_required),
     ) -> EducationalProgramHierarchyViewSchema:
-        pass
+        return await self.educational_program_service.educational_program_hierarchy(
+            educational_program_id=educational_program_id,
+        )
 
     @educational_program_router.get("/get", tags=["educational_program"])
     @try_rollback
