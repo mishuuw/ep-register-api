@@ -1,8 +1,11 @@
 ifeq ($(OS),Windows_NT)
 	SLEEP := timeout
+	RM_MIGR_VERSIONS := powershell -Command "Remove-Item -Recurse -Force core/src/migrations/versions/*"
 
 else
 	SLEEP := sleep
+	RM_MIGR_VERSIONS := rm -rf ./core/src/migrations/versions/*
+
 endif
 
 merge:
@@ -13,6 +16,19 @@ merge:
 	git checkout dev
 
 # dev
+reinit-db-dev:
+	$(RM_MIGR_VERSIONS)
+
+	docker compose -f docker-compose-dev.yaml exec -w /core api rm -r src
+	docker compose -f docker-compose-dev.yaml cp ./core/src api:core
+
+	docker compose -f docker-compose-dev.yaml rm database -fsv
+	docker compose -f docker-compose-dev.yaml up --build -d --no-deps database
+	docker compose -f docker-compose-dev.yaml cp ./core/src/models api:/core/src
+	$(SLEEP) 5
+	docker compose -f docker-compose-dev.yaml exec -w /core api python -m alembic revision --autogenerate -m "init"
+	docker compose -f docker-compose-dev.yaml cp api:/core/src/migrations/versions ./core/src/migrations
+	docker compose -f docker-compose-dev.yaml exec -w /core api python -m alembic upgrade head
 
 start-dev:
 	docker compose -f docker-compose-dev.yaml up --build -d

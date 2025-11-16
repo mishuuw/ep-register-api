@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from src.models.enum import (
     EducationalFormEnum,
     EducationalProgramLanguageTypeEnum,
-    EducationalStandartEnum,
+    EducationalstandardEnum,
     NetworkFormEnum,
 )
 
@@ -27,7 +27,7 @@ class EducationalProgramSchema(BaseModel):
     educational_form: Optional[EducationalFormEnum] = Field(
         None, description="Educational form"
     )
-    educational_standart_type: Optional[EducationalStandartEnum] = Field(
+    educational_standard_type: Optional[EducationalstandardEnum] = Field(
         None, description="Educational standard type"
     )
 
@@ -49,7 +49,7 @@ class EducationalProgramSchema(BaseModel):
     description: Optional[str] = Field(None, description="Description")
 
 
-class EducationalProgramGetSchema(EducationalProgramSchema):
+class EducationalProgramGetSchema(BaseModel):
     title: str = Field(..., description="Title of the educational program")
 
     school_title: Optional[str] = Field(None, description="School title")
@@ -60,7 +60,7 @@ class EducationalProgramGetSchema(EducationalProgramSchema):
     educational_form: Optional[EducationalFormEnum] = Field(
         None, description="Educational form"
     )
-    educational_standart_type: Optional[EducationalStandartEnum] = Field(
+    educational_standard_type: Optional[EducationalstandardEnum] = Field(
         None, description="Educational standard type"
     )
 
@@ -93,12 +93,12 @@ class EducationalProgramAddSchema(EducationalProgramSchema):
     is_active: bool = Field(..., description="Is the educational program active")
 
 
-class EducationalProgramIdSchema(EducationalProgramSchema):
-    id: int = Field(..., description="Educational Program ID")
-
-
 class EducationalProgramGetFilterSchema(BaseModel):
-    is_active: Optional[bool] = Field(None, description="Filter by active status")
+    field_of_study_id: Optional[int] = Field(
+        None, description="Field of Study ID for filtering"
+    )
+    start_year: Optional[int] = Field(None, description="Start year for filtering")
+    end_year: Optional[int] = Field(None, description="End year for filtering")
 
 
 class EducationalProgramGetViewSchema(BaseModel):
@@ -121,7 +121,7 @@ class EducationalProgramActiveViewSchema(BaseModel):
 
 
 # Схемы для иерархии ОП
-class EducationalProgramHierarchySchema(EducationalProgramIdSchema):
+class EducationalProgramHierarchySchema(EducationalProgramGetSchema):
     parent: Optional[EducationalProgramHierarchySchema] = Field(
         None, description="Parent educational program"
     )

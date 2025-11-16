@@ -12,7 +12,7 @@ from src.models.base import BaseOrm
 from src.models.enum import (
     EducationalFormEnum,
     EducationalProgramLanguageTypeEnum,
-    EducationalStandartEnum,
+    EducationalstandardEnum,
     NetworkFormEnum,
 )
 
@@ -52,13 +52,13 @@ class EducationalProgramOrm(BaseOrm):
 
     network_form = Column(Enum(NetworkFormEnum))
     educational_form = Column(Enum(EducationalFormEnum))
-    educational_standart_type = Column(Enum(EducationalStandartEnum))
+    educational_standard_type = Column(Enum(EducationalstandardEnum))
 
     language = Column(Enum(EducationalProgramLanguageTypeEnum))
     language_hours = Column(Integer)
 
     curriculum_number = Column(TEXT)
-    standart_duration_months = Column(Integer)
+    standard_duration_months = Column(Integer)
     poa_accreditation_expiry = Column(Date)
     state_accreditation_expiry = Column(Date)
     description = Column(TEXT)

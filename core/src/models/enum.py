@@ -33,7 +33,7 @@ class EducationalFormEnum(enum.Enum):
     BOTH = "BOTH"
 
 
-class EducationalStandartEnum(enum.Enum):
+class EducationalstandardEnum(enum.Enum):
     FGOS_VO_3_PLUS = "ФГОС ВО (3++)"
     OS_VO_DVFU = "ОС ВО ДВФУ"
 

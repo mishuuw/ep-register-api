@@ -6,6 +6,9 @@ from src.common.common_repo import CommonRepository
 from src.educational_program.educational_program_repo import (
     EducationalProgramRepository,
 )
+from src.educational_program.educational_program_schema import (
+    EducationalProgramGetViewSchema,
+)
 from src.educational_program.educational_program_usecase import (
     EducationalProgramUsecase,
 )
@@ -33,3 +36,10 @@ class EducationalProgramService:
             back=back,
             session=session,
         )
+
+    async def educational_program_get(
+        self,
+    ) -> EducationalProgramGetViewSchema:
+        result = await self.educational_program_repo.educational_program_get()
+
+        return result

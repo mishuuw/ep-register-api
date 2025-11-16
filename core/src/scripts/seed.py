@@ -11,7 +11,7 @@ from src.models.enum import (
     EducationalFormEnum,
     EducationalProgramLanguageTypeEnum,
     EducationalProgramPartnerEnum,
-    EducationalStandartEnum,
+    EducationalstandardEnum,
     NetworkFormEnum,
 )
 from src.models.educational_program import (
@@ -100,6 +100,8 @@ async def seed(session: AsyncSession) -> None:
         },
     )
 
+    await session.flush()
+
     # Educational programs
     edu_program, _ = await upsert(
         session,
@@ -112,11 +114,11 @@ async def seed(session: AsyncSession) -> None:
             "partner_id": partner_oo.id,
             "network_form": NetworkFormEnum.FEFU_BASIC,
             "educational_form": EducationalFormEnum.OFFLINE,
-            "educational_standart_type": EducationalStandartEnum.FGOS_VO_3_PLUS,
+            "educational_standard_type": EducationalstandardEnum.FGOS_VO_3_PLUS,
             "language": EducationalProgramLanguageTypeEnum.RUSSIAN,
             "language_hours": 72,
             "curriculum_number": "ПИ-09.03.03-2025",
-            "standart_duration_months": 48,
+            "standard_duration_months": 48,
             "poa_accreditation_expiry": date(2030, 6, 30),
             "state_accreditation_expiry": date(2032, 12, 31),
             "description": """Базовая образовательная программа по направлению

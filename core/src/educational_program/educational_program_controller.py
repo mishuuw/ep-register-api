@@ -9,6 +9,7 @@ from src.config.settings import get_settings
 from src.educational_program.educational_program_schema import (
     EducationalProgramActiveViewSchema,
     EducationalProgramAddSchema,
+    EducationalProgramGetFilterSchema,
     EducationalProgramGetViewSchema,
     EducationalProgramHierarchyViewSchema,
     EducationalProgramUpdateSchema,
@@ -61,12 +62,13 @@ class EducationalProgramController:
         self,
         _: UserSchema = Depends(token_service.admin_required),
     ) -> EducationalProgramGetViewSchema:
-        pass
+        return await self.educational_program_service.educational_program_get()
 
-    @educational_program_router.get("/get", tags=["educational_program", "active"])
+    @educational_program_router.get("/active/get", tags=["educational_program"])
     @try_rollback
     async def educational_program_active_get(
         self,
+        filter: EducationalProgramGetFilterSchema = Depends(),
         _: UserSchema = Depends(token_service.admin_required),
     ) -> EducationalProgramActiveViewSchema:
         pass
