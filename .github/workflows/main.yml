@@ -13,19 +13,14 @@ jobs:
       - name: Get diff stats
         id: diff
         run: |
-          # Считаем количество изменённых файлов
-          FILES_CHANGED=$(git show --stat --oneline --pretty="" | wc -l | tr -d ' ')
-          
-          # Считаем добавленные строки
-          LINES_ADDED=$(git show --numstat --pretty="" | awk '{a+=$1} END {if(a=="") print 0; else print a}')
-          
-          # Считаем удалённые строки
-          LINES_REMOVED=$(git show --numstat --pretty="" | awk '{a+=$2} END {if(a=="") print 0; else print a}')
-      
-          # Выводим в GITHUB_OUTPUT
+          FILES_CHANGED=$(git diff-tree --no-commit-id --name-only -r HEAD | wc -l | tr -d ' ')
+          LINES_ADDED=$(git diff-tree --no-commit-id --numstat -r HEAD | awk '{a+=$1} END {if(a=="") print 0; else print a}')
+          LINES_REMOVED=$(git diff-tree --no-commit-id --numstat -r HEAD | awk '{a+=$2} END {if(a=="") print 0; else print a}')
+
           echo "files=$FILES_CHANGED" >> $GITHUB_OUTPUT
           echo "added=$LINES_ADDED" >> $GITHUB_OUTPUT
           echo "removed=$LINES_REMOVED" >> $GITHUB_OUTPUT
+
           
       - name: Short SHA
         id: shortsha
