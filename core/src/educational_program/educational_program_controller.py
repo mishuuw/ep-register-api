@@ -7,8 +7,8 @@ from src.common.common_schema import AddViewSchema, SuccessSchema
 from src.common.token_service import token_service
 from src.config.settings import get_settings
 from src.educational_program.educational_program_schema import (
+    EducationalProgramActiveViewSchema,
     EducationalProgramAddSchema,
-    EducationalProgramGetFilterSchema,
     EducationalProgramGetViewSchema,
     EducationalProgramHierarchyViewSchema,
     EducationalProgramUpdateSchema,
@@ -59,9 +59,16 @@ class EducationalProgramController:
     @try_rollback
     async def educational_program_get(
         self,
-        filter: EducationalProgramGetFilterSchema = Depends(),
         _: UserSchema = Depends(token_service.admin_required),
     ) -> EducationalProgramGetViewSchema:
+        pass
+
+    @educational_program_router.get("/get", tags=["educational_program", "active"])
+    @try_rollback
+    async def educational_program_active_get(
+        self,
+        _: UserSchema = Depends(token_service.admin_required),
+    ) -> EducationalProgramActiveViewSchema:
         pass
 
     @educational_program_router.post("/add", tags=["educational_program"])
