@@ -9,7 +9,10 @@ from src.common.common_exc import (
     ShouldntBeNullHttpException,
 )
 from src.common.common_repo import CommonRepository
-from src.common.common_schema import AddViewSchema, DependencyCheckSchema
+from src.common.common_schema import AddViewSchema, DependencyCheckSchema, SuccessSchema
+from src.educational_program.educational_program_exc import (
+    DeletionRestrictedHttpException,
+)
 from src.educational_program.educational_program_repo import (
     EducationalProgramRepository,
 )
@@ -28,6 +31,7 @@ from src.models.educational_program import (
     EducationalProgramActiveOrm,
     EducationalProgramOrm,
 )
+from src.models.enum import DeleteBehaviorEnum
 from src.models.field_of_study import FieldOfStudyOrm
 from src.models.school import SchoolOrm
 
@@ -54,6 +58,32 @@ class EducationalProgramService:
             back=back,
             session=session,
         )
+
+    async def educational_program_delete(
+        self,
+        educational_program_id: int,
+        delete_behavior: DeleteBehaviorEnum,
+    ) -> SuccessSchema:
+        children_ids = await self.educational_program_repo._get_all_children_ids(
+            educational_program_id=educational_program_id,
+        )
+        if children_ids != []:
+            match delete_behavior:
+                case DeleteBehaviorEnum.RESTRICT:
+                    raise DeletionRestrictedHttpException()
+                case DeleteBehaviorEnum.CASCADE:
+                    await self.common_repo.delete(
+                        EducationalProgramOrm,
+                        EducationalProgramOrm.id.in_(
+                            children_ids + [educational_program_id]
+                        ),
+                    )
+                case DeleteBehaviorEnum.SET_NULL:
+                    await self.common_repo.delete(
+                        EducationalProgramOrm,
+                        EducationalProgramOrm.id == educational_program_id,
+                    )
+        return SuccessSchema(detail="success")
 
     async def educational_program_add(
         self,

@@ -29,9 +29,13 @@ class EducationalProgramActiveOrm(BaseOrm):
     )
 
     educational_program_id = Column(
-        Integer, ForeignKey("educational_program.id"), nullable=False
+        Integer,
+        ForeignKey("educational_program.id", ondelete="CASCADE"),
+        nullable=False,
     )
-    field_of_study_id = Column(Integer, ForeignKey("field_of_study.id"), nullable=False)
+    field_of_study_id = Column(
+        Integer, ForeignKey("field_of_study.id", ondelete="RESTRICT"), nullable=False
+    )
 
     start_year = Column(Integer, nullable=False)
     end_year = Column(Integer, nullable=False)
@@ -43,7 +47,9 @@ class EducationalProgramOrm(BaseOrm):
     title = Column(TEXT, nullable=False)
     title_short = Column(String(5))
 
-    parent_id = Column(Integer, ForeignKey("educational_program.id"))
+    parent_id = Column(
+        Integer, ForeignKey("educational_program.id", ondelete="SET NULL")
+    )
     school_id = Column(Integer, ForeignKey("school.id"))
 
     # accreditation_certificate_id = Column(Integer, ForeignKey("accreditation_certificate.id")) # noqa
@@ -74,8 +80,12 @@ class EducationalProgramToPartnerOrm(BaseOrm):
     )
 
     educational_program_id = Column(
-        Integer, ForeignKey("educational_program.id"), nullable=False
+        Integer,
+        ForeignKey("educational_program.id", ondelete="CASCADE"),
+        nullable=False,
     )
     partner_id = Column(
-        Integer, ForeignKey("educational_program_partner.id"), nullable=False
+        Integer,
+        ForeignKey("educational_program_partner.id", ondelete="CASCADE"),
+        nullable=False,
     )

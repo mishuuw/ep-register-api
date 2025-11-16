@@ -111,4 +111,7 @@ class EducationalProgramController:
         ),
         _: UserSchema = Depends(token_service.admin_required),
     ) -> SuccessSchema:
-        pass
+        return await self.educational_program_service.educational_program_delete(
+            educational_program_id=educational_program_id,
+            delete_behavior=delete_behavior,
+        )

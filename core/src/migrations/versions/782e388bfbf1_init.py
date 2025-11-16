@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 0b27a83722c7
+Revision ID: 782e388bfbf1
 Revises:
-Create Date: 2025-11-16 05:53:41.397511
+Create Date: 2025-11-16 08:59:18.221960
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "0b27a83722c7"
+revision: str = "782e388bfbf1"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -209,6 +209,7 @@ def upgrade() -> None:
             ["parent_id"],
             ["educational_program.id"],
             name=op.f("fk_educational_program_parent_id_educational_program"),
+            ondelete="SET NULL",
         ),
         sa.ForeignKeyConstraint(
             ["school_id"],
@@ -291,6 +292,7 @@ def upgrade() -> None:
             name=op.f(
                 "fk_educational_program_active_educational_program_id_educational_program"
             ),
+            ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["field_of_study_id"],
@@ -298,6 +300,7 @@ def upgrade() -> None:
             name=op.f(
                 "fk_educational_program_active_field_of_study_id_field_of_study"
             ),
+            ondelete="RESTRICT",
         ),
         sa.PrimaryKeyConstraint(
             "id", name=op.f("pk_educational_program_active")
@@ -332,6 +335,7 @@ def upgrade() -> None:
             name=op.f(
                 "fk_educational_program_to_partner_educational_program_id_educational_program"
             ),
+            ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["partner_id"],
@@ -339,6 +343,7 @@ def upgrade() -> None:
             name=op.f(
                 "fk_educational_program_to_partner_partner_id_educational_program_partner"
             ),
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint(
             "id", name=op.f("pk_educational_program_to_partner")

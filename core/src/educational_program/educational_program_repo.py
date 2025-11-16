@@ -39,6 +39,16 @@ class EducationalProgramRepository:
         self.back = back
         self.session = session
 
+    async def _get_all_children_ids(
+        self,
+        educational_program_id: int,
+    ) -> list[int]:
+        query = select(EducationalProgramOrm.id).where(
+            EducationalProgramOrm.parent_id == educational_program_id
+        )
+        rows = (await self.session.execute(query)).all()
+        return [row[0] for row in rows]
+
     async def educational_program_hierarchy(
         self,
         educational_program_id: int,
@@ -148,7 +158,7 @@ class EducationalProgramRepository:
             ancestor_active_map = await self._get_latest_active_map(ancestor_ids)
 
             parent_chain = None
-            for ancestor_id in ancestor_ids:
+            for ancestor_id in reversed(ancestor_ids):
                 row = ancestor_row_map.get(ancestor_id)
                 if row is None:
                     continue
