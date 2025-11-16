@@ -9,13 +9,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2  # чтобы HEAD^ существовал
 
       - name: Get diff stats
         id: diff
         run: |
-          FILES_CHANGED=$(git diff-tree --no-commit-id --name-only -r HEAD | wc -l | tr -d ' ')
-          LINES_ADDED=$(git diff-tree --no-commit-id --numstat -r HEAD | awk '{a+=$1} END {if(a=="") print 0; else print a}')
-          LINES_REMOVED=$(git diff-tree --no-commit-id --numstat -r HEAD | awk '{a+=$2} END {if(a=="") print 0; else print a}')
+          FILES_CHANGED=$(git diff --name-only HEAD^ HEAD | wc -l | tr -d ' ')
+          LINES_ADDED=$(git diff --numstat HEAD^ HEAD | awk '{a+=$1} END {if(a=="") print 0; else print a}')
+          LINES_REMOVED=$(git diff --numstat HEAD^ HEAD | awk '{a+=$2} END {if(a=="") print 0; else print a}')
 
           echo "files=$FILES_CHANGED" >> $GITHUB_OUTPUT
           echo "added=$LINES_ADDED" >> $GITHUB_OUTPUT
