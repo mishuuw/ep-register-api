@@ -75,7 +75,11 @@ class EducationalProgramUpdateSchema(EducationalProgramCoreFields):
 
 
 class EducationalProgramAddSchema(EducationalProgramSchema):
-    parent_id: Optional[int] = Field(None, description="Parent educational program ID")
+    parent_id: Optional[int] = Field(
+        None,
+        description="Parent educational program ID. If not None, unfilled fields will"
+        " be inherited from parent.",
+    )
     school_id: Optional[int] = Field(None, description="School ID")
     degree_id: Optional[int] = Field(None, description="Degree ID")
     title_short: Optional[str] = Field(None, description="Short Title")

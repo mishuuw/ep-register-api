@@ -1,7 +1,7 @@
 from typing import Literal
 
 from fastapi import BackgroundTasks
-from sqlalchemy import and_
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_exc import (
     AlreadyExistsHttpException,
@@ -303,6 +303,39 @@ class EducationalProgramService:
         self,
         data: EducationalProgramAddSchema,
     ) -> AddViewSchema:
+
+        unset_keys = set(EducationalProgramAddSchema.model_fields.keys()) - set(
+            data.model_dump(exclude_unset=True).keys()
+        )
+        if data.parent_id is not None:
+            parent_row = (
+                await self.session.execute(
+                    select(EducationalProgramOrm, EducationalProgramActiveOrm)
+                    .where(EducationalProgramOrm.id == data.parent_id)
+                    .outerjoin(
+                        EducationalProgramActiveOrm,
+                        EducationalProgramActiveOrm.educational_program_id
+                        == EducationalProgramOrm.id,
+                    )
+                )
+            ).one_or_none()
+
+            # Merge missing fields from parent educational / active rows into data
+            if parent_row is not None:
+                parent_educational, parent_active = parent_row[0], parent_row[1]
+                for key in unset_keys:
+                    if (
+                        parent_educational is not None
+                        and getattr(parent_educational, key, None) is not None
+                    ):
+                        setattr(data, key, getattr(parent_educational, key))
+                        continue
+                    if (
+                        parent_active is not None
+                        and getattr(parent_active, key, None) is not None
+                    ):
+                        setattr(data, key, getattr(parent_active, key))
+                        continue
 
         if data.is_active:
             missing_fields = {
