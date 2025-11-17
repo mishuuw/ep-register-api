@@ -43,11 +43,33 @@ class EducationalProgramRepository:
         self,
         educational_program_id: int,
     ) -> list[int]:
+        descendants_cte = (
+            select(EducationalProgramOrm.id)
+            .where(EducationalProgramOrm.parent_id == educational_program_id)
+            .cte(name="descendants", recursive=True)
+        )
+
+        descendants_cte = descendants_cte.union_all(
+            select(EducationalProgramOrm.id).where(
+                EducationalProgramOrm.parent_id == descendants_cte.c.id
+            )
+        )
+
+        rows = (
+            (await self.session.execute(select(descendants_cte.c.id))).scalars().all()
+        )
+        return rows
+
+    async def _get_immediate_children_ids(
+        self,
+        educational_program_id: int,
+    ) -> list[int]:
+        # return only direct children of given node
         query = select(EducationalProgramOrm.id).where(
             EducationalProgramOrm.parent_id == educational_program_id
         )
-        rows = (await self.session.execute(query)).all()
-        return [row[0] for row in rows]
+        rows = (await self.session.execute(query)).scalars().all()
+        return rows
 
     async def educational_program_hierarchy(
         self,

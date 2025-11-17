@@ -272,27 +272,37 @@ class EducationalProgramService:
         educational_program_id: int,
         delete_behavior: DeleteBehaviorEnum,
     ) -> SuccessSchema:
-        children_ids = await self.educational_program_repo._get_all_children_ids(
+        # get all descendants (recursive)
+        descendants = await self.educational_program_repo._get_all_children_ids(
             educational_program_id=educational_program_id,
         )
-        if children_ids:
+        print(descendants)
+        if descendants:
             match delete_behavior:
                 case DeleteBehaviorEnum.RESTRICT:
                     raise DeletionRestrictedHttpException()
                 case DeleteBehaviorEnum.CASCADE:
+                    # delete all descendants
                     await self.common_repo.delete(
                         EducationalProgramOrm,
                         EducationalProgramOrm.id.in_(
-                            children_ids + [educational_program_id]
+                            descendants + [educational_program_id]
                         ),
                     )
                     return SuccessSchema(detail="success")
                 case DeleteBehaviorEnum.SET_NULL:
-                    await self.common_repo.update_stmt(
-                        EducationalProgramOrm,
-                        EducationalProgramOrm.id.in_(children_ids),
-                        {"parent_id": None},
+                    # set NULL only for immediate children
+                    immediate_children = (
+                        await self.educational_program_repo._get_immediate_children_ids(
+                            educational_program_id=educational_program_id
+                        )
                     )
+                    if immediate_children:
+                        await self.common_repo.update_stmt(
+                            EducationalProgramOrm,
+                            EducationalProgramOrm.id.in_(immediate_children),
+                            {"parent_id": None},
+                        )
         await self.common_repo.delete(
             EducationalProgramOrm,
             EducationalProgramOrm.id == educational_program_id,
