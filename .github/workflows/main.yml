@@ -22,23 +22,38 @@ jobs:
           echo "files=$FILES_CHANGED" >> $GITHUB_OUTPUT
           echo "added=$LINES_ADDED" >> $GITHUB_OUTPUT
           echo "removed=$LINES_REMOVED" >> $GITHUB_OUTPUT
-
+    
+      - name: Get last commit message
+        id: last_commit
+        run: |
+          echo "msg=$(echo '${{ toJson(github.event.commits) }}' \
+            | jq -r '.[-1].message')" >> $GITHUB_OUTPUT
           
       - name: Short SHA
         id: shortsha
         run: echo "sha_short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Telegram Alerts
+        run: |
+          TEXT="<b>Commit <a href=\"https://github.com/${{ github.repository }}/commit/${{ github.sha }}\">${{ steps.shortsha.outputs.sha_short }}</a></b>
+      
+          — <b>${{ github.actor }}</b> committed to branch <code>${{ github.ref_name }}</code>
           
-      - name: send telegram message on push
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TG_CHAT_ID }}
-          token: ${{ secrets.TGBOT_API_KEY }}
-          format: html
-          message: |
-            <b>Commit <a href="https://github.com/${{ github.repository }}/commit/${{ github.sha }}">${{ steps.shortsha.outputs.sha_short }}</a></b>
-
-            — <b>${{ github.actor }}</b> committed to branch <code>${{ github.ref_name }}</code>
-
-            <blockquote>${{ github.event.commits[0].message }}</blockquote>
-
-            <b>${{ steps.diff.outputs.files }} files changed</b> || <b>+${{ steps.diff.outputs.added }}</b> <b>-${{ steps.diff.outputs.removed }}</b>
+          <blockquote>${{ steps.last_commit.outputs.msg }}</blockquote>
+          
+          <b>${{ steps.diff.outputs.files }} files changed</b> || <b>+${{ steps.diff.outputs.added }}</b> <b>-${{ steps.diff.outputs.removed }}</b>"
+          
+          JSON=$(jq -n \
+            --arg chat_id "${{ secrets.TG_CHAT_ID }}" \
+            --arg thread_id "${{ secrets.TG_CHAT_THREAD_ID }}" \
+            --arg text "$TEXT" \
+            '{
+              chat_id: $chat_id,
+              message_thread_id: ($thread_id | tonumber?),
+              text: $text,
+              parse_mode: "HTML"
+            }')
+      
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TGBOT_API_KEY }}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "$JSON"
