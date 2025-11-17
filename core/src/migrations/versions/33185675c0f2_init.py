@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 9c5fc4641d13
+Revision ID: 33185675c0f2
 Revises:
-Create Date: 2025-11-14 00:51:56.554132
+Create Date: 2025-11-16 09:35:42.310025
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "9c5fc4641d13"
+revision: str = "33185675c0f2"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -99,12 +99,7 @@ def upgrade() -> None:
             comment="Format: XX.XX.XX",
         ),
         sa.Column("title", sa.TEXT(), nullable=False),
-        sa.Column(
-            "title_short",
-            sa.String(length=5),
-            nullable=False,
-            comment="Format: XX.XX.XXTTTTT, ex. 09.03.03ру; 'ру' = title_short",
-        ),
+        sa.Column("title_short", sa.String(length=5), nullable=False),
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
         sa.Column(
             "created_at",
@@ -149,11 +144,10 @@ def upgrade() -> None:
     op.create_table(
         "educational_program",
         sa.Column("title", sa.TEXT(), nullable=False),
+        sa.Column("title_short", sa.String(length=5), nullable=True),
         sa.Column("parent_id", sa.Integer(), nullable=True),
-        sa.Column("school_code", sa.String(length=3), nullable=True),
-        sa.Column("field_of_study_code", sa.String(length=8), nullable=True),
-        sa.Column("degree_id", sa.Integer(), nullable=False),
-        sa.Column("partner_id", sa.Integer(), nullable=True),
+        sa.Column("school_id", sa.Integer(), nullable=True),
+        sa.Column("degree_id", sa.Integer(), nullable=True),
         sa.Column(
             "network_form",
             sa.Enum(
@@ -171,9 +165,9 @@ def upgrade() -> None:
             nullable=True,
         ),
         sa.Column(
-            "educational_standart_type",
+            "educational_standard_type",
             sa.Enum(
-                "FGOS_VO_3_PLUS", "OS_VO_DVFU", name="educationalstandartenum"
+                "FGOS_VO_3_PLUS", "OS_VO_DVFU", name="educationalstandardenum"
             ),
             nullable=True,
         ),
@@ -188,8 +182,8 @@ def upgrade() -> None:
             nullable=True,
         ),
         sa.Column("language_hours", sa.Integer(), nullable=True),
-        sa.Column("curriculum_number", sa.TEXT(), nullable=True),
-        sa.Column("standart_duration_months", sa.Integer(), nullable=True),
+        sa.Column("standard_duration_months", sa.Integer(), nullable=True),
+        sa.Column("poa_accreditation_company", sa.TEXT(), nullable=True),
         sa.Column("poa_accreditation_expiry", sa.Date(), nullable=True),
         sa.Column("state_accreditation_expiry", sa.Date(), nullable=True),
         sa.Column("description", sa.TEXT(), nullable=True),
@@ -212,28 +206,15 @@ def upgrade() -> None:
             name=op.f("fk_educational_program_degree_id_degree"),
         ),
         sa.ForeignKeyConstraint(
-            ["field_of_study_code"],
-            ["field_of_study.code"],
-            name=op.f(
-                "fk_educational_program_field_of_study_code_field_of_study"
-            ),
-        ),
-        sa.ForeignKeyConstraint(
             ["parent_id"],
             ["educational_program.id"],
             name=op.f("fk_educational_program_parent_id_educational_program"),
+            ondelete="SET NULL",
         ),
         sa.ForeignKeyConstraint(
-            ["partner_id"],
-            ["educational_program_partner.id"],
-            name=op.f(
-                "fk_educational_program_partner_id_educational_program_partner"
-            ),
-        ),
-        sa.ForeignKeyConstraint(
-            ["school_code"],
-            ["school.code"],
-            name=op.f("fk_educational_program_school_code_school"),
+            ["school_id"],
+            ["school.id"],
+            name=op.f("fk_educational_program_school_id_school"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_educational_program")),
     )
@@ -288,9 +269,10 @@ def upgrade() -> None:
     )
     op.create_table(
         "educational_program_active",
-        sa.Column("educational_program_id", sa.Integer(), nullable=True),
-        sa.Column("start_year", sa.Integer(), nullable=True),
-        sa.Column("end_year", sa.Integer(), nullable=True),
+        sa.Column("educational_program_id", sa.Integer(), nullable=False),
+        sa.Column("field_of_study_id", sa.Integer(), nullable=False),
+        sa.Column("start_year", sa.Integer(), nullable=False),
+        sa.Column("end_year", sa.Integer(), nullable=False),
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
         sa.Column(
             "created_at",
@@ -310,9 +292,66 @@ def upgrade() -> None:
             name=op.f(
                 "fk_educational_program_active_educational_program_id_educational_program"
             ),
+            ondelete="CASCADE",
+        ),
+        sa.ForeignKeyConstraint(
+            ["field_of_study_id"],
+            ["field_of_study.id"],
+            name=op.f(
+                "fk_educational_program_active_field_of_study_id_field_of_study"
+            ),
+            ondelete="RESTRICT",
         ),
         sa.PrimaryKeyConstraint(
             "id", name=op.f("pk_educational_program_active")
+        ),
+        sa.UniqueConstraint(
+            "field_of_study_id",
+            "start_year",
+            "end_year",
+            name="uq_field_of_study_start_end",
+        ),
+    )
+    op.create_table(
+        "educational_program_to_partner",
+        sa.Column("educational_program_id", sa.Integer(), nullable=False),
+        sa.Column("partner_id", sa.Integer(), nullable=False),
+        sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("CURRENT_TIMESTAMP"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("CURRENT_TIMESTAMP"),
+            nullable=False,
+        ),
+        sa.ForeignKeyConstraint(
+            ["educational_program_id"],
+            ["educational_program.id"],
+            name=op.f(
+                "fk_educational_program_to_partner_educational_program_id_educational_program"
+            ),
+            ondelete="CASCADE",
+        ),
+        sa.ForeignKeyConstraint(
+            ["partner_id"],
+            ["educational_program_partner.id"],
+            name=op.f(
+                "fk_educational_program_to_partner_partner_id_educational_program_partner"
+            ),
+            ondelete="CASCADE",
+        ),
+        sa.PrimaryKeyConstraint(
+            "id", name=op.f("pk_educational_program_to_partner")
+        ),
+        sa.UniqueConstraint(
+            "educational_program_id",
+            "partner_id",
+            name="uq_educational_program_partner",
         ),
     )
     # ### end Alembic commands ###
@@ -321,6 +360,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table("educational_program_to_partner")
     op.drop_table("educational_program_active")
     op.drop_table("user")
     op.drop_table("educational_program")

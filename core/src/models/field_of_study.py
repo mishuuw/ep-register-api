@@ -8,11 +8,7 @@ class FieldOfStudyOrm(BaseOrm):
     code = Column(String(8), nullable=False, unique=True, comment="Format: XX.XX.XX")
 
     title = Column(TEXT, nullable=False)
-    title_short = Column(
-        String(5),
-        nullable=False,
-        comment="Format: XX.XX.XXTTTTT, ex. 09.03.03ру; 'ру' = title_short",
-    )
+    title_short = Column(String(5), nullable=False)
 
     __table_args__ = (
         CheckConstraint(
