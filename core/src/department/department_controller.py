@@ -4,14 +4,15 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema
-from src.common.token_service import token_service  # noqa
+from src.common.token_service import token_service
 from src.config.settings import get_settings
 from src.department.department_schema import (
-    DepartmentAddSchema,
-    DepartmentFilterSchema,
     DepartmentGetViewSchema,
+    DepartmentSchema,
+    DepartmentUpdateSchema,
 )
 from src.department.department_service import DepartmentService
+from src.user.user_schema import UserSchema
 from src.utils.common_util import try_rollback
 from src.utils.db_util import get_session_obj
 
@@ -44,32 +45,34 @@ class DepartmentController:
     @try_rollback
     async def department_get(
         self,
-        filter: DepartmentFilterSchema = Depends(),
-        #    _: UserSchema = Depends(token_service.admin_required),
     ) -> DepartmentGetViewSchema:
-        pass
+        return await self.department_service.department_get()
 
     @department_router.post("/add", tags=["department"])
     @try_rollback
     async def department_add(
         self,
-        data: DepartmentAddSchema,
-        #    _: UserSchema = Depends(token_service.admin_required),
+        data: DepartmentSchema,
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
-        pass
+        return await self.department_service.department_add(data=data)
 
     @department_router.patch("/update", tags=["department"])
     @try_rollback
     async def department_update(
         self,
-        #    _: UserSchema = Depends(token_service.admin_required),
+        data: DepartmentUpdateSchema,
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
-        pass
+        return await self.department_service.department_update(data=data)
 
     @department_router.delete("/delete", tags=["department"])
     @try_rollback
     async def department_delete(
         self,
-        #    _: UserSchema = Depends(token_service.admin_required),
+        department_id: int = Query(..., description="Department ID"),
+        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
-        pass
+        return await self.department_service.department_delete(
+            department_id=department_id
+        )
