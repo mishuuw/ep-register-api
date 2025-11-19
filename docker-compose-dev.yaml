@@ -16,6 +16,8 @@ services:
         volumes:
             - ./dumps/main.sql:/docker-entrypoint-initdb.d/main.sql
             - ./dumps:/dumps
+        networks:
+            - ep-register-net
 
     api:
         links:
@@ -39,6 +41,8 @@ services:
         volumes:
             - ./core/static:/core/static
             - ./core/logs:/core/logs
+        networks:
+            - ep-register-net
 
     nginx:
         image: nginx:1.25.4
@@ -57,7 +61,13 @@ services:
         depends_on:
             - api
             - database
+        networks:
+            - ep-register-net
             
 volumes:
     data:
         driver: local
+
+networks:
+  ep-register-net:
+    driver: bridge
