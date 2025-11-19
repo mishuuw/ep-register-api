@@ -1,10 +1,10 @@
 from typing import Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema
-from src.common.token_service import token_service  # noqa
+from src.auth.auth_service import AuthService
 from src.config.settings import get_settings
 from src.educational_program_partner.educational_program_partner_schema import (
     EducationalProgramPartnerAddSchema,
@@ -41,6 +41,11 @@ class EducationalProgramPartnerController:
             back=back,
             session=session,
         )
+        self.auth_service = AuthService(
+            lang=lang,
+            back=back,
+            session=session,
+        )
 
     @educational_program_partner_router.get(
         "/get", tags=["educational_program_partner"]
@@ -48,10 +53,12 @@ class EducationalProgramPartnerController:
     @try_rollback
     async def educational_program_partner_get(
         self,
+        request: Request,
         filter: EducationalProgramPartnerFilterSchema = Depends(),
-        #    _: UserSchema = Depends(token_service.admin_required),
     ) -> EducationalProgramPartnerGetViewSchema:
-        pass
+        await self.auth_service.admin_required(request=request)
+        service = self.educational_program_partner_service
+        return await service.educational_program_partner_get(filter=filter)
 
     @educational_program_partner_router.post(
         "/add", tags=["educational_program_partner"]
@@ -59,10 +66,12 @@ class EducationalProgramPartnerController:
     @try_rollback
     async def educational_program_partner_add(
         self,
+        request: Request,
         data: EducationalProgramPartnerAddSchema,
-        #    _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
-        pass
+        await self.auth_service.admin_required(request=request)
+        service = self.educational_program_partner_service
+        return await service.educational_program_partner_add(data=data)
 
     @educational_program_partner_router.patch(
         "/update", tags=["educational_program_partner"]
@@ -70,9 +79,9 @@ class EducationalProgramPartnerController:
     @try_rollback
     async def educational_program_partner_update(
         self,
-        #    _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
-        pass
+        # NOTE: fill update fields when implemented
+        raise NotImplementedError
 
     @educational_program_partner_router.delete(
         "/delete", tags=["educational_program_partner"]
@@ -80,6 +89,6 @@ class EducationalProgramPartnerController:
     @try_rollback
     async def educational_program_partner_delete(
         self,
-        #    _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
-        pass
+        # NOTE: fill delete logic when implemented
+        raise NotImplementedError

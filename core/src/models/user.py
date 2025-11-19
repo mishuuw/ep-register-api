@@ -6,7 +6,7 @@ from src.models.enum import AccessLevelEnum
 class UserOrm(BaseOrm):
     __tablename__ = "user"
 
-    email = Column(TEXT)
+    email = Column(TEXT, nullable=False, unique=True, index=True)
     phone = Column(TEXT)
     position = Column(TEXT)
     full_name = Column(TEXT)

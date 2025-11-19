@@ -1,10 +1,10 @@
 from typing import Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema
-from src.common.token_service import token_service
+from src.auth.auth_service import AuthService
 from src.config.settings import get_settings
 from src.school.school_schema import (
     SchoolGetViewSchema,
@@ -12,7 +12,6 @@ from src.school.school_schema import (
     SchoolUpdateSchema,
 )
 from src.school.school_service import SchoolService
-from src.user.user_schema import UserSchema
 from src.utils.common_util import try_rollback
 from src.utils.db_util import get_session_obj
 
@@ -40,6 +39,11 @@ class SchoolController:
             back=back,
             session=session,
         )
+        self.auth_service = AuthService(
+            lang=lang,
+            back=back,
+            session=session,
+        )
 
     @school_router.get("/get", tags=["school"])
     @try_rollback
@@ -52,25 +56,31 @@ class SchoolController:
     @try_rollback
     async def school_add(
         self,
+        request: Request,
+        response: Response,
         data: SchoolSchema,
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.school_service.school_add(data=data)
 
     @school_router.patch("/update", tags=["school"])
     @try_rollback
     async def school_update(
         self,
+        request: Request,
+        response: Response,
         data: SchoolUpdateSchema,
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.school_service.school_update(data=data)
 
     @school_router.delete("/delete", tags=["school"])
     @try_rollback
     async def school_delete(
         self,
+        request: Request,
+        response: Response,
         school_id: int = Query(..., description="School ID"),
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.school_service.school_delete(school_id=school_id)

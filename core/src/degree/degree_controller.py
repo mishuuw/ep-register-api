@@ -1,10 +1,10 @@
 from typing import Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema
-from src.common.token_service import token_service
+from src.auth.auth_service import AuthService
 from src.config.settings import get_settings
 from src.degree.degree_schema import (
     DegreeAddSchema,
@@ -12,7 +12,6 @@ from src.degree.degree_schema import (
     DegreeUpdateSchema,
 )
 from src.degree.degree_service import DegreeService
-from src.user.user_schema import UserSchema
 from src.utils.common_util import try_rollback
 from src.utils.db_util import get_session_obj
 
@@ -40,6 +39,11 @@ class DegreeController:
             back=back,
             session=session,
         )
+        self.auth_service = AuthService(
+            lang=lang,
+            back=back,
+            session=session,
+        )
 
     @degree_router.get("/get", tags=["degree"])
     @try_rollback
@@ -50,25 +54,31 @@ class DegreeController:
     @try_rollback
     async def degree_add(
         self,
+        request: Request,
+        response: Response,
         data: DegreeAddSchema,
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.degree_service.degree_add(data=data)
 
     @degree_router.patch("/update", tags=["degree"])
     @try_rollback
     async def degree_update(
         self,
+        request: Request,
+        response: Response,
         data: DegreeUpdateSchema,
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.degree_service.degree_update(data=data)
 
     @degree_router.delete("/delete", tags=["degree"])
     @try_rollback
     async def degree_delete(
         self,
+        request: Request,
+        response: Response,
         degree_id: int = Query(..., description="Degree ID"),
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.degree_service.degree_delete(degree_id=degree_id)

@@ -1,10 +1,10 @@
 from typing import Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema
-from src.common.token_service import token_service
+from src.auth.auth_service import AuthService
 from src.config.settings import get_settings
 from src.field_of_study.field_of_study_schema import (
     FieldOfStudyGetViewSchema,
@@ -12,7 +12,6 @@ from src.field_of_study.field_of_study_schema import (
     FieldOfStudyUpdateSchema,
 )
 from src.field_of_study.field_of_study_service import FieldOfStudyService
-from src.user.user_schema import UserSchema
 from src.utils.common_util import try_rollback
 from src.utils.db_util import get_session_obj
 
@@ -40,6 +39,11 @@ class FieldOfStudyController:
             back=back,
             session=session,
         )
+        self.auth_service = AuthService(
+            lang=lang,
+            back=back,
+            session=session,
+        )
 
     @field_of_study_router.get("/get", tags=["field_of_study"])
     @try_rollback
@@ -52,27 +56,33 @@ class FieldOfStudyController:
     @try_rollback
     async def field_of_study_add(
         self,
+        request: Request,
+        response: Response,
         data: FieldOfStudySchema,
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.field_of_study_service.field_of_study_add(data=data)
 
     @field_of_study_router.patch("/update", tags=["field_of_study"])
     @try_rollback
     async def field_of_study_update(
         self,
+        request: Request,
+        response: Response,
         data: FieldOfStudyUpdateSchema,
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.field_of_study_service.field_of_study_update(data=data)
 
     @field_of_study_router.delete("/delete", tags=["field_of_study"])
     @try_rollback
     async def field_of_study_delete(
         self,
+        request: Request,
+        response: Response,
         field_of_study_id: int = Query(..., description="Field of Study ID"),
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> None:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.field_of_study_service.field_of_study_delete(
             field_of_study_id=field_of_study_id
         )

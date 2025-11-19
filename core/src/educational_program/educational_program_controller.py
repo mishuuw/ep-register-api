@@ -1,10 +1,10 @@
 from typing import Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema, SuccessSchema
-from src.common.token_service import token_service
+from src.auth.auth_service import AuthService
 from src.config.settings import get_settings
 from src.educational_program.educational_program_schema import (
     EducationalProgramActiveViewSchema,
@@ -18,7 +18,6 @@ from src.educational_program.educational_program_service import (
     EducationalProgramService,
 )
 from src.models.enum import DeleteBehaviorEnum
-from src.user.user_schema import UserSchema
 from src.utils.common_util import try_rollback
 from src.utils.db_util import get_session_obj
 
@@ -46,14 +45,21 @@ class EducationalProgramController:
             back=back,
             session=session,
         )
+        self.auth_service = AuthService(
+            lang=lang,
+            back=back,
+            session=session,
+        )
 
     @educational_program_router.get("/hierarchy", tags=["educational_program"])
     @try_rollback
     async def educational_program_hierarchy(
         self,
+        request: Request,
+        response: Response,
         educational_program_id: int = Query(..., description="Educational program ID"),
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> EducationalProgramHierarchyViewSchema:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.educational_program_service.educational_program_hierarchy(
             educational_program_id=educational_program_id,
         )
@@ -62,17 +68,21 @@ class EducationalProgramController:
     @try_rollback
     async def educational_program_get(
         self,
-        _: UserSchema = Depends(token_service.admin_required),
+        request: Request,
+        response: Response,
     ) -> EducationalProgramGetViewSchema:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.educational_program_service.educational_program_get()
 
     @educational_program_router.get("/active/get", tags=["educational_program"])
     @try_rollback
     async def educational_program_active_get(
         self,
+        request: Request,
+        response: Response,
         filter: EducationalProgramGetFilterSchema = Depends(),
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> EducationalProgramActiveViewSchema:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.educational_program_service.educational_program_active_get(
             filter=filter,
         )
@@ -81,9 +91,11 @@ class EducationalProgramController:
     @try_rollback
     async def educational_program_add(
         self,
+        request: Request,
+        response: Response,
         data: EducationalProgramAddSchema,
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.educational_program_service.educational_program_add(
             data=data,
         )
@@ -92,9 +104,11 @@ class EducationalProgramController:
     @try_rollback
     async def educational_program_update(
         self,
+        request: Request,
+        response: Response,
         data: EducationalProgramUpdateSchema,
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> SuccessSchema:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.educational_program_service.educational_program_update(
             data=data,
         )
@@ -103,6 +117,8 @@ class EducationalProgramController:
     @try_rollback
     async def educational_program_delete(
         self,
+        request: Request,
+        response: Response,
         educational_program_id: int,
         delete_behavior: DeleteBehaviorEnum = Query(
             default=DeleteBehaviorEnum.RESTRICT,
@@ -111,8 +127,8 @@ class EducationalProgramController:
             дочерние ОП; SET NULL - установить значение NULL в дочерних ОП
             (Теперь эти ОП будут считаться начальными в своей иерархии)""",
         ),
-        _: UserSchema = Depends(token_service.admin_required),
     ) -> SuccessSchema:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.educational_program_service.educational_program_delete(
             educational_program_id=educational_program_id,
             delete_behavior=delete_behavior,

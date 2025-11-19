@@ -49,7 +49,7 @@ class Settings(BaseSettings):
 
     load_dotenv(dotenv_path=dotenv_path)
 
-    SERVICE: str = "register"
+    SERVICE: str = "ep-register"
     HOST: str = os.environ.get("HOST")
     MODE: str = os.environ.get("MODE", "dev")
     SECRET_AUTH: str = os.environ.get("SECRET_AUTH")

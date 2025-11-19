@@ -6,3 +6,4 @@ import src.models.enum  # noqa
 import src.models.field_of_study  # noqa
 import src.models.school  # noqa
 import src.models.user  # noqa
+import src.models.auth  # noqa

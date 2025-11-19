@@ -6,6 +6,15 @@ class AccessLevelEnum(enum.Enum):
     manager = "manager"
     admin = "admin"
 
+    @property
+    def level(self) -> int:
+        mapping = {
+            AccessLevelEnum.manager: 1,
+            AccessLevelEnum.director: 2,
+            AccessLevelEnum.admin: 3,
+        }
+        return mapping[self]
+
 
 class EducationalProgramPartnerEnum(enum.Enum):
     OO = "OO"

@@ -23,6 +23,8 @@ from src.models.educational_program_partner import EducationalProgramPartnerOrm
 from src.models.field_of_study import FieldOfStudyOrm
 from src.models.school import SchoolOrm
 from src.models.user import UserOrm
+from src.models.auth import CredentialsOrm
+from src.auth.auth_usecase import AuthUsecase
 from src.utils.db_util import get_session
 
 
@@ -202,8 +204,8 @@ async def seed(session: AsyncSession) -> None:
         values={},
     )
 
-    # Users (dummy)
-    await upsert(
+    # Users (dummy) with credentials
+    admin_user, _ = await upsert(
         session,
         UserOrm,
         where={"email": "admin@example.com"},
@@ -218,7 +220,7 @@ async def seed(session: AsyncSession) -> None:
         },
     )
 
-    await upsert(
+    manager_user, _ = await upsert(
         session,
         UserOrm,
         where={"email": "manager@example.com"},
@@ -234,6 +236,23 @@ async def seed(session: AsyncSession) -> None:
             "is_active": True,
         },
     )
+
+    # Seed credentials for demo users using AuthUsecase hashing
+    auth_usecase = AuthUsecase(session=session, back=None, lang="en")
+
+    for user, password in (
+        (admin_user, "admin"),
+        (manager_user, "manager"),
+    ):
+        if user is None:
+            continue
+        password_hash = auth_usecase.hash_password(password)
+        await upsert(
+            session,
+            CredentialsOrm,
+            where={"user_id": user.id},
+            values={"password_hash": password_hash},
+        )
 
 
 async def main() -> None:

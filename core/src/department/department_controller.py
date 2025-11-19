@@ -1,10 +1,10 @@
 from typing import Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema
-from src.common.token_service import token_service  # noqa
+from src.auth.auth_service import AuthService
 from src.config.settings import get_settings
 from src.department.department_schema import (
     DepartmentAddSchema,
@@ -39,37 +39,50 @@ class DepartmentController:
             back=back,
             session=session,
         )
+        self.auth_service = AuthService(
+            lang=lang,
+            back=back,
+            session=session,
+        )
 
     @department_router.get("/get", tags=["department"])
     @try_rollback
     async def department_get(
         self,
+        request: Request,
+        response: Response,
         filter: DepartmentFilterSchema = Depends(),
-        #    _: UserSchema = Depends(token_service.admin_required),
     ) -> DepartmentGetViewSchema:
-        pass
+        await self.auth_service.manager_required(request=request, response=response)
+        return await self.department_service.department_get(filter=filter)
 
     @department_router.post("/add", tags=["department"])
     @try_rollback
     async def department_add(
         self,
+        request: Request,
+        response: Response,
         data: DepartmentAddSchema,
-        #    _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
-        pass
+        await self.auth_service.admin_required(request=request, response=response)
+        return await self.department_service.department_add(data=data)
 
     @department_router.patch("/update", tags=["department"])
     @try_rollback
     async def department_update(
         self,
-        #    _: UserSchema = Depends(token_service.admin_required),
+        request: Request,
+        response: Response,
     ) -> None:
-        pass
+        await self.auth_service.admin_required(request=request, response=response)
+        raise NotImplementedError
 
     @department_router.delete("/delete", tags=["department"])
     @try_rollback
     async def department_delete(
         self,
-        #    _: UserSchema = Depends(token_service.admin_required),
+        request: Request,
+        response: Response,
     ) -> None:
-        pass
+        await self.auth_service.admin_required(request=request, response=response)
+        raise NotImplementedError

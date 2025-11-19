@@ -60,7 +60,13 @@ def custom_openapi():
         "CookieAuth": {
             "type": "apiKey",
             "in": "cookie",
-            "name": "ep-register-token",
+            "name": settings.EP_REGISTER_COOKIE_NAME,
+        },
+        "Bearer": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization",
+            "description": "Bearer token",
         },
     }
 

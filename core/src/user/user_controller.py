@@ -1,10 +1,10 @@
 from typing import Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema
-from src.common.token_service import token_service
+from src.auth.auth_service import AuthService
 from src.config.settings import get_settings
 from src.user.user_schema import UserGetViewSchema, UserSchema, UserUpdateSchema
 from src.user.user_service import UserService
@@ -35,22 +35,31 @@ class UserController:
             back=back,
             session=session,
         )
+        self.auth_service = AuthService(
+            lang=lang,
+            back=back,
+            session=session,
+        )
 
     @user_router.get("/get", tags=["user"])
     @try_rollback
     async def user_get(
         self,
-        _: bool = Depends(token_service.admin_required),
+        request: Request,
+        response: Response,
     ) -> UserGetViewSchema:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.user_service.user_get()
 
     @user_router.post("/add", tags=["user"])
     @try_rollback
     async def user_add(
         self,
+        request: Request,
+        response: Response,
         data: UserSchema,
-        _: bool = Depends(token_service.admin_required),
     ) -> AddViewSchema:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.user_service.user_add(
             data=data,
         )
@@ -59,9 +68,11 @@ class UserController:
     @try_rollback
     async def user_update(
         self,
+        request: Request,
+        response: Response,
         data: UserUpdateSchema,
-        _: bool = Depends(token_service.admin_required),
     ) -> None:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.user_service.user_update(
             data=data,
         )
@@ -70,12 +81,14 @@ class UserController:
     @try_rollback
     async def user_delete(
         self,
+        request: Request,
+        response: Response,
         user_id: int = Query(
             ...,
             description="User ID",
         ),
-        _: bool = Depends(token_service.admin_required),
     ) -> None:
+        await self.auth_service.admin_required(request=request, response=response)
         return await self.user_service.user_delete(
             user_id=user_id,
         )
