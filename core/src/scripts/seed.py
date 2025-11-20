@@ -29,7 +29,8 @@ from src.utils.db_util import get_session
 
 
 async def get_one(session: AsyncSession, model, **by):
-    return await session.scalar(select(model).filter_by(**by))
+    result = await session.execute(select(model).filter_by(**by))
+    return result.scalars().first()
 
 
 async def upsert(
@@ -86,8 +87,22 @@ async def seed(session: AsyncSession) -> None:
 
     bachelor_degree = await get_one(session, DegreeOrm, title="Бакалавр")
 
-    # Fields of study
-    f_o_s, _ = await upsert(
+    # Fields of study for each program
+    f_o_s_base, _ = await upsert(
+        session,
+        FieldOfStudyOrm,
+        where={"code": "09.03.01"},
+        values={"title": "Информатика и вычислительная техника", "title_short": "ИВТ"},
+    )
+
+    f_o_s_core, _ = await upsert(
+        session,
+        FieldOfStudyOrm,
+        where={"code": "09.03.02"},
+        values={"title": "Информационные системы и технологии", "title_short": "ИСТ"},
+    )
+
+    f_o_s_advanced, _ = await upsert(
         session,
         FieldOfStudyOrm,
         where={"code": "09.03.03"},
@@ -191,13 +206,37 @@ async def seed(session: AsyncSession) -> None:
             values={},
         )
 
-    # Educational program active period
+    # Educational program active periods (make all programs active with different FoS)
+    await upsert(
+        session,
+        EducationalProgramActiveOrm,
+        where={
+            "educational_program_id": base_program.id,
+            "field_of_study_id": f_o_s_base.id,
+            "start_year": 2025,
+            "end_year": 2029,
+        },
+        values={},
+    )
+
     await upsert(
         session,
         EducationalProgramActiveOrm,
         where={
             "educational_program_id": core_program.id,
-            "field_of_study_id": f_o_s.id,
+            "field_of_study_id": f_o_s_core.id,
+            "start_year": 2025,
+            "end_year": 2029,
+        },
+        values={},
+    )
+
+    await upsert(
+        session,
+        EducationalProgramActiveOrm,
+        where={
+            "educational_program_id": advanced_program.id,
+            "field_of_study_id": f_o_s_advanced.id,
             "start_year": 2025,
             "end_year": 2029,
         },
@@ -232,7 +271,7 @@ async def seed(session: AsyncSession) -> None:
             "access_level": AccessLevelEnum.manager,
             "school_id": school.id,
             "department_id": dept.id,
-            "field_of_study_id": f_o_s.id,
+            "field_of_study_id": f_o_s_core.id,
             "is_active": True,
         },
     )
