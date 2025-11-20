@@ -39,6 +39,7 @@ class AuthService:
         type_req: AccessLevelEnum,
         response: Response,
     ) -> bool:
+        return True  # dev
         """STRICT LOGIC: REQUIRE ACCESS TOKEN ON EVERY REQUEST, DONT ALLOW JUST REFRESH
         # bearer = request.headers.get("Authorization")
         # if not bearer:
