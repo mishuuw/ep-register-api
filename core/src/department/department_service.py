@@ -52,14 +52,12 @@ class DepartmentService:
 
         await self.common_repo.delete(
             DepartmentOrm,
-            DepartmentOrm.id == department.id,
+            DepartmentOrm.id == department_id,
         )
 
         return SuccessSchema(detail="success")
 
-    async def department_update(
-        self, data: DepartmentUpdateSchema
-    ) -> SuccessSchema:
+    async def department_update(self, data: DepartmentUpdateSchema) -> SuccessSchema:
         department = await self.common_repo.get_one(
             DepartmentOrm,
             DepartmentOrm.id == data.id,
@@ -68,18 +66,17 @@ class DepartmentService:
             raise NotFoundHttpException(name="Department")
 
         data_dict = data.model_dump(exclude_unset=True)
-        result = await self.common_repo.update(
+        await self.common_repo.update(
             DepartmentOrm(
                 **data_dict,
             )
         )
-        if result.id:
-            return SuccessSchema(detail="success")
+        return SuccessSchema(detail="success")
 
     async def department_add(self, data: DepartmentSchema) -> AddViewSchema:
         department = await self.common_repo.add(
             DepartmentOrm(
-                code=data.code, title=data.title, title_short=data.title_short, school_id=data.school_id
+                title=data.title,
             )
         )
 
@@ -99,10 +96,7 @@ class DepartmentService:
             result=[
                 DepartmentGetSchema(
                     id=department.id,
-                    code=department.code,
                     title=department.title,
-                    title_short=department.title_short,
-                    school_id=department.school_id,
                 )
                 for department in departments
             ],

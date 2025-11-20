@@ -3,7 +3,7 @@ from typing import Literal
 from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.common.common_schema import AddViewSchema
+from src.common.common_schema import AddViewSchema, SuccessSchema
 from src.common.token_service import token_service
 from src.config.settings import get_settings
 from src.department.department_schema import (
@@ -53,7 +53,7 @@ class DepartmentController:
     async def department_add(
         self,
         data: DepartmentSchema,
-        _: UserSchema = Depends(token_service.admin_required),
+        # _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
         return await self.department_service.department_add(data=data)
 
@@ -62,8 +62,8 @@ class DepartmentController:
     async def department_update(
         self,
         data: DepartmentUpdateSchema,
-        _: UserSchema = Depends(token_service.admin_required),
-    ) -> None:
+        # _: UserSchema = Depends(token_service.admin_required),
+    ) -> SuccessSchema:
         return await self.department_service.department_update(data=data)
 
     @department_router.delete("/delete", tags=["department"])
@@ -71,8 +71,8 @@ class DepartmentController:
     async def department_delete(
         self,
         department_id: int = Query(..., description="Department ID"),
-        _: UserSchema = Depends(token_service.admin_required),
-    ) -> None:
+        # _: UserSchema = Depends(token_service.admin_required),
+    ) -> SuccessSchema:
         return await self.department_service.department_delete(
             department_id=department_id
         )
