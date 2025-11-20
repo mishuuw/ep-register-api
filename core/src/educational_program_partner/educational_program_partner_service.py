@@ -10,10 +10,10 @@ from src.educational_program_partner.educational_program_partner_repo import (
     EducationalProgramPartnerRepository,
 )
 from src.educational_program_partner.educational_program_partner_schema import (
-    EducationalProgramPartnerAddSchema,
     EducationalProgramPartnerFilterSchema,
     EducationalProgramPartnerGetSchema,
     EducationalProgramPartnerGetViewSchema,
+    EducationalProgramPartnerSchema,
     EducationalProgramPartnerUpdateSchema,
 )
 from src.educational_program_partner.educational_program_partner_usecase import (
@@ -24,10 +24,10 @@ from src.models.educational_program_partner import EducationalProgramPartnerOrm
 
 class EducationalProgramPartnerService:
     def __init__(
-            self,
-            session: AsyncSession,
-            back: BackgroundTasks,
-            lang: Literal["ru", "en"],
+        self,
+        session: AsyncSession,
+        back: BackgroundTasks,
+        lang: Literal["ru", "en"],
     ):
         self.lang = lang
         self.back = back
@@ -46,8 +46,8 @@ class EducationalProgramPartnerService:
         )
 
     async def educational_program_partner_delete(
-            self,
-            educational_program_partner_id: int,
+        self,
+        educational_program_partner_id: int,
     ) -> SuccessSchema:
         educational_program_partner = await self.common_repo.get_one(
             EducationalProgramPartnerOrm,
@@ -63,8 +63,8 @@ class EducationalProgramPartnerService:
         return SuccessSchema(detail="success")
 
     async def educational_program_partner_update(
-            self,
-            data: EducationalProgramPartnerUpdateSchema,
+        self,
+        data: EducationalProgramPartnerUpdateSchema,
     ) -> SuccessSchema:
         educational_program_partner = await self.common_repo.get_one(
             EducationalProgramPartnerOrm,
@@ -73,48 +73,45 @@ class EducationalProgramPartnerService:
         if not educational_program_partner:
             raise NotFoundHttpException(name="Educational Program Partner")
 
-        data_dict = data.model_dump(exclude_unset=True, exclude={"id"})
+        data_dict = data.model_dump(exclude_unset=True)
 
         # Проверяем, есть ли что обновлять
         if not data_dict:
             return SuccessSchema(detail="success")
 
         await self.common_repo.update(
-            EducationalProgramPartnerOrm,
-            EducationalProgramPartnerOrm.id == data.id,
-            data_dict
+            EducationalProgramPartnerOrm(
+                **data_dict,
+            )
         )
         return SuccessSchema(detail="success")
 
     async def educational_program_partner_add(
-            self,
-            data: EducationalProgramPartnerAddSchema,
+        self,
+        data: EducationalProgramPartnerSchema,
     ) -> AddViewSchema:
         educational_program_partner = await self.common_repo.add(
             EducationalProgramPartnerOrm(
-                educational_program_id=data.educational_program_id,
-                partner_name=data.partner_name,
+                title=data.title,
                 partner_type=data.partner_type,
-                contact_person=data.contact_person,
-                contact_email=data.contact_email,
-                contact_phone=data.contact_phone,
+                hours=data.hours,
             )
         )
         return AddViewSchema(id=educational_program_partner.id)
 
     async def educational_program_partner_get(
-            self,
-            filter: EducationalProgramPartnerFilterSchema,
+        self,
+        filter: EducationalProgramPartnerFilterSchema,
     ) -> EducationalProgramPartnerGetViewSchema:
         filters = []
-        if filter.educational_program_id is not None:
-            filters.append(EducationalProgramPartnerOrm.educational_program_id == filter.educational_program_id)
         if filter.partner_type is not None:
-            filters.append(EducationalProgramPartnerOrm.partner_type == filter.partner_type)
+            filters.append(
+                EducationalProgramPartnerOrm.partner_type == filter.partner_type
+            )
 
         educational_program_partners = await self.common_repo.get_all_scalars(
             EducationalProgramPartnerOrm,
-            and_(*filters) if filters else None,
+            and_(*filters) if filters else True,
         )
 
         return EducationalProgramPartnerGetViewSchema(
@@ -122,12 +119,9 @@ class EducationalProgramPartnerService:
             result=[
                 EducationalProgramPartnerGetSchema(
                     id=partner.id,
-                    educational_program_id=partner.educational_program_id,
-                    partner_name=partner.partner_name,
+                    title=partner.title,
                     partner_type=partner.partner_type,
-                    contact_person=partner.contact_person,
-                    contact_email=partner.contact_email,
-                    contact_phone=partner.contact_phone,
+                    hours=partner.hours,
                 )
                 for partner in educational_program_partners
             ],

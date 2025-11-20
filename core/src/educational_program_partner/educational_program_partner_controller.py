@@ -7,9 +7,9 @@ from src.common.common_schema import AddViewSchema, SuccessSchema
 from src.common.token_service import token_service
 from src.config.settings import get_settings
 from src.educational_program_partner.educational_program_partner_schema import (
-    EducationalProgramPartnerAddSchema,
     EducationalProgramPartnerFilterSchema,
     EducationalProgramPartnerGetViewSchema,
+    EducationalProgramPartnerSchema,
     EducationalProgramPartnerUpdateSchema,
 )
 from src.educational_program_partner.educational_program_partner_service import (
@@ -51,9 +51,11 @@ class EducationalProgramPartnerController:
     async def educational_program_partner_get(
         self,
         filter: EducationalProgramPartnerFilterSchema = Depends(),
-        _: UserSchema = Depends(token_service.admin_required),
+        #     _: UserSchema = Depends(token_service.admin_required),
     ) -> EducationalProgramPartnerGetViewSchema:
-        return await self.educational_program_partner_service.educational_program_partner_get(filter=filter)
+        return await self.educational_program_partner_service.educational_program_partner_get(  # noqa
+            filter=filter
+        )
 
     @educational_program_partner_router.post(
         "/add", tags=["educational_program_partner"]
@@ -61,10 +63,12 @@ class EducationalProgramPartnerController:
     @try_rollback
     async def educational_program_partner_add(
         self,
-        data: EducationalProgramPartnerAddSchema,
-        _: UserSchema = Depends(token_service.admin_required),
+        data: EducationalProgramPartnerSchema,
+        #     _: UserSchema = Depends(token_service.admin_required),
     ) -> AddViewSchema:
-        return await self.educational_program_partner_service.educational_program_partner_add(data=data)
+        return await self.educational_program_partner_service.educational_program_partner_add(  # noqa
+            data=data
+        )
 
     @educational_program_partner_router.patch(
         "/update", tags=["educational_program_partner"]
@@ -73,9 +77,11 @@ class EducationalProgramPartnerController:
     async def educational_program_partner_update(
         self,
         data: EducationalProgramPartnerUpdateSchema,
-        _: UserSchema = Depends(token_service.admin_required),
+        #      _: UserSchema = Depends(token_service.admin_required),
     ) -> SuccessSchema:
-        return await self.educational_program_partner_service.educational_program_partner_update(data=data)
+        return await self.educational_program_partner_service.educational_program_partner_update(  # noqa
+            data=data
+        )
 
     @educational_program_partner_router.delete(
         "/delete", tags=["educational_program_partner"]
@@ -83,9 +89,9 @@ class EducationalProgramPartnerController:
     @try_rollback
     async def educational_program_partner_delete(
         self,
-        educational_program_partner_id: int = Query(..., description="Educational Program Partner ID"),
-        _: UserSchema = Depends(token_service.admin_required),
+        educational_program_partner_id: int,
+        #     _: UserSchema = Depends(token_service.admin_required),
     ) -> SuccessSchema:
-        return await self.educational_program_partner_service.educational_program_partner_delete(
+        return await self.educational_program_partner_service.educational_program_partner_delete(  # noqa
             educational_program_partner_id=educational_program_partner_id
         )
