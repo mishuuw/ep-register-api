@@ -1,15 +1,16 @@
 from typing import Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.common.common_schema import AddViewSchema
+from src.common.common_schema import AddViewSchema, SuccessSchema
 from src.auth.auth_service import AuthService
 from src.config.settings import get_settings
 from src.educational_program_partner.educational_program_partner_schema import (
-    EducationalProgramPartnerAddSchema,
     EducationalProgramPartnerFilterSchema,
     EducationalProgramPartnerGetViewSchema,
+    EducationalProgramPartnerSchema,
+    EducationalProgramPartnerUpdateSchema,
 )
 from src.educational_program_partner.educational_program_partner_service import (
     EducationalProgramPartnerService,
@@ -54,9 +55,10 @@ class EducationalProgramPartnerController:
     async def educational_program_partner_get(
         self,
         request: Request,
+        response: Response,
         filter: EducationalProgramPartnerFilterSchema = Depends(),
     ) -> EducationalProgramPartnerGetViewSchema:
-        await self.auth_service.admin_required(request=request)
+        await self.auth_service.admin_required(request=request, response=response)
         service = self.educational_program_partner_service
         return await service.educational_program_partner_get(filter=filter)
 
@@ -67,9 +69,10 @@ class EducationalProgramPartnerController:
     async def educational_program_partner_add(
         self,
         request: Request,
-        data: EducationalProgramPartnerAddSchema,
+        response: Response,
+        data: EducationalProgramPartnerSchema,
     ) -> AddViewSchema:
-        await self.auth_service.admin_required(request=request)
+        await self.auth_service.admin_required(request=request, response=response)
         service = self.educational_program_partner_service
         return await service.educational_program_partner_add(data=data)
 
@@ -79,9 +82,13 @@ class EducationalProgramPartnerController:
     @try_rollback
     async def educational_program_partner_update(
         self,
-    ) -> None:
-        # NOTE: fill update fields when implemented
-        raise NotImplementedError
+        request: Request,
+        response: Response,
+        data: EducationalProgramPartnerUpdateSchema,
+    ) -> SuccessSchema:
+        await self.auth_service.admin_required(request=request, response=response)
+        service = self.educational_program_partner_service
+        return await service.educational_program_partner_update(data=data)
 
     @educational_program_partner_router.delete(
         "/delete", tags=["educational_program_partner"]
@@ -89,6 +96,12 @@ class EducationalProgramPartnerController:
     @try_rollback
     async def educational_program_partner_delete(
         self,
-    ) -> None:
-        # NOTE: fill delete logic when implemented
-        raise NotImplementedError
+        request: Request,
+        response: Response,
+        educational_program_partner_id: int,
+    ) -> SuccessSchema:
+        await self.auth_service.admin_required(request=request, response=response)
+        service = self.educational_program_partner_service
+        return await service.educational_program_partner_delete(
+            educational_program_partner_id=educational_program_partner_id
+        )

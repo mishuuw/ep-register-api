@@ -3,13 +3,13 @@ from typing import Literal
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.common.common_schema import AddViewSchema
 from src.auth.auth_service import AuthService
+from src.common.common_schema import AddViewSchema, SuccessSchema
 from src.config.settings import get_settings
 from src.department.department_schema import (
     DepartmentAddSchema,
-    DepartmentFilterSchema,
     DepartmentGetViewSchema,
+    DepartmentUpdateSchema,
 )
 from src.department.department_service import DepartmentService
 from src.utils.common_util import try_rollback
@@ -51,10 +51,9 @@ class DepartmentController:
         self,
         request: Request,
         response: Response,
-        filter: DepartmentFilterSchema = Depends(),
     ) -> DepartmentGetViewSchema:
         await self.auth_service.manager_required(request=request, response=response)
-        return await self.department_service.department_get(filter=filter)
+        return await self.department_service.department_get()
 
     @department_router.post("/add", tags=["department"])
     @try_rollback
@@ -73,9 +72,10 @@ class DepartmentController:
         self,
         request: Request,
         response: Response,
-    ) -> None:
+        data: DepartmentUpdateSchema,
+    ) -> SuccessSchema:
         await self.auth_service.admin_required(request=request, response=response)
-        raise NotImplementedError
+        return await self.department_service.department_update(data=data)
 
     @department_router.delete("/delete", tags=["department"])
     @try_rollback
@@ -83,6 +83,9 @@ class DepartmentController:
         self,
         request: Request,
         response: Response,
-    ) -> None:
+        department_id: int,
+    ) -> SuccessSchema:
         await self.auth_service.admin_required(request=request, response=response)
-        raise NotImplementedError
+        return await self.department_service.department_delete(
+            department_id=department_id
+        )
