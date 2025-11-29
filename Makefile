@@ -73,7 +73,7 @@ seed-dev:
 
 start-prod:
 	docker compose -f docker-compose-prod.yaml up --build -d
-	$(SLEEP) 2
+	$(SLEEP) 8
 
 	docker compose -f docker-compose-prod.yaml exec -w /core api python -m alembic upgrade head
 
