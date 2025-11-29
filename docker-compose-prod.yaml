@@ -36,8 +36,11 @@ services:
             options:
                 max-size: "10m"
                 max-file: "5"
-        build: ./core
-        command: python -m uvicorn src.app:app --host 0.0.0.0 --port 8000 --reload
+        build:
+            context: ./core
+            args:
+                PIP_NO_CACHE: "1"
+        command: python -m uvicorn src.app:app --host 0.0.0.0 --port 8000
         volumes:
             - ./core/static:/core/static
             - ./core/logs:/core/logs
@@ -52,7 +55,7 @@ services:
             - ./nginx/mime.types:/etc/nginx/mime.types
             - ./core/static:/core/static
         ports:
-            - 8042:80
+            - 80:80
         logging:
             driver: "json-file"
             options:
