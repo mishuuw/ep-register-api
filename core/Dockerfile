@@ -20,16 +20,6 @@ RUN apt-get update && \
 
 COPY requirements.txt /core
 
-# Build-time flag: set PIP_NO_CACHE=1 for production builds to disable pip cache
-ARG PIP_NO_CACHE=0
-
-# Use a cache mount for pip when available (BuildKit). If PIP_NO_CACHE=1, pip is run
-# with --no-cache-dir so the cache mount is ignored.
-RUN --mount=type=cache,target=/root/.cache/pip \
-    if [ "${PIP_NO_CACHE}" = "1" ]; then \
-        pip install --no-cache-dir -r requirements.txt; \
-    else \
-        pip install -r requirements.txt; \
-    fi
+RUN pip install -r requirements.txt; 
 
 COPY . /core
