@@ -1,6 +1,6 @@
 from collections import defaultdict
-from sqlalchemy import select, and_
-from typing import Literal
+from sqlalchemy import select, and_, or_
+from typing import Literal, Optional
 
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +14,7 @@ from src.educational_program.educational_program_schema import (
     EducationalProgramGetViewSchema,
     EducationalProgramHierarchySchema,
     EducationalProgramHierarchyViewSchema,
+    EducationalProgramActiveGetFilterSchema,
 )
 from src.models.degree import DegreeOrm
 from src.models.educational_program import (
@@ -276,30 +277,24 @@ class EducationalProgramRepository:
 
     async def educational_program_active_get(
         self,
-        filter: EducationalProgramGetFilterSchema,
+        filter: EducationalProgramActiveGetFilterSchema,
+        partner_ids: Optional[list[int]] = None,
+        no_partners: Optional[bool] = None,
     ) -> EducationalProgramActiveViewSchema:
-        filters = []
-        if filter.start_year is not None:
-            filters.append(EducationalProgramActiveOrm.start_year == filter.start_year)
-        if filter.end_year is not None:
-            filters.append(EducationalProgramActiveOrm.end_year == filter.end_year)
-        if filter.field_of_study_id is not None:
-            filters.append(
-                EducationalProgramActiveOrm.field_of_study_id
-                == filter.field_of_study_id
-            )
+        if filter.mode == "and":
+            mode_ = and_
+        else:
+            mode_ = or_
 
-        query = select(
-            EducationalProgramActiveOrm,
-            FieldOfStudyOrm,
-            EducationalProgramOrm,
-            SchoolOrm,
-            DegreeOrm,
-        )
-        if filters:
-            query = query.where(and_(*filters))
         query = (
-            query.join(
+            select(
+                EducationalProgramActiveOrm,
+                FieldOfStudyOrm,
+                EducationalProgramOrm,
+                SchoolOrm,
+                DegreeOrm,
+            )
+            .join(
                 EducationalProgramOrm,
                 EducationalProgramOrm.id
                 == EducationalProgramActiveOrm.educational_program_id,
@@ -311,6 +306,21 @@ class EducationalProgramRepository:
             .outerjoin(SchoolOrm, SchoolOrm.id == EducationalProgramOrm.school_id)
             .outerjoin(DegreeOrm, DegreeOrm.id == EducationalProgramOrm.degree_id)
         )
+
+        # Применение фильтрации
+        query, filters = await self._get_filtering(query, filter, partner_ids, no_partners)
+        if filter.start_year is not None:
+            filters.append(EducationalProgramActiveOrm.start_year == filter.start_year)
+        if filter.end_year is not None:
+            filters.append(EducationalProgramActiveOrm.end_year == filter.end_year)
+        if filter.field_of_study_id is not None:
+            filters.append(
+                EducationalProgramActiveOrm.field_of_study_id
+                == filter.field_of_study_id
+            )
+        
+        if filters:
+            query = query.where(mode_(*filters))
 
         result = (await self.session.execute(query)).all()
         active_ids = {epa.id for epa, *_ in result}
@@ -353,7 +363,14 @@ class EducationalProgramRepository:
 
     async def educational_program_get(
         self,
+        filter: EducationalProgramGetFilterSchema,
+        partner_ids: Optional[list[int]] = None,
+        no_partners: Optional[bool] = None,
     ) -> EducationalProgramGetViewSchema:
+        if filter.mode == "and":
+            mode_ = and_
+        else:
+            mode_ = or_
         query = (
             select(
                 EducationalProgramOrm,
@@ -363,6 +380,13 @@ class EducationalProgramRepository:
             .outerjoin(SchoolOrm, SchoolOrm.id == EducationalProgramOrm.school_id)
             .outerjoin(DegreeOrm, DegreeOrm.id == EducationalProgramOrm.degree_id)
         )
+
+        # применение фильтрации
+        query, filters = await self._get_filtering(query, filter, partner_ids, no_partners)
+
+        if filters:
+            query = query.where(mode_(*filters))
+        
         result = (await self.session.execute(query)).all()
         partner_map = await self._get_partners_by_program_ids(
             sorted({ep.id for ep, *_ in result})
@@ -396,3 +420,87 @@ class EducationalProgramRepository:
             count=len({ep.id for ep, *_ in result}),
             result=schemas,
         )
+
+    async def _get_filtering(
+        self,
+        query,
+        filter: EducationalProgramGetFilterSchema,
+        partner_ids: Optional[list[int]] = None,
+        no_partners: Optional[bool] = None,
+    ):
+        filters = []
+        if filter.network_form is not None:
+            filters.append(
+                EducationalProgramOrm.network_form == filter.network_form
+            )
+        if filter.educational_form is not None:
+            filters.append(
+                EducationalProgramOrm.educational_form == filter.educational_form
+            )
+        if filter.educational_standard_type is not None:
+            filters.append(
+                EducationalProgramOrm.educational_standard_type
+                == filter.educational_standard_type
+            )
+        if filter.language is not None:
+            filters.append(EducationalProgramOrm.language == filter.language)
+        if filter.language_hours is not None:
+            filters.append(
+                EducationalProgramOrm.language_hours == filter.language_hours
+            )
+        if filter.standard_duration_months is not None:
+            filters.append(
+                EducationalProgramOrm.standard_duration_months
+                == filter.standard_duration_months
+            )
+        if filter.poa_accreditation_company is not None:
+            filters.append(
+                EducationalProgramOrm.poa_accreditation_company
+                == filter.poa_accreditation_company
+            )
+        if filter.poa_accreditation_expiry_is_null:
+            filters.append(
+                EducationalProgramOrm.poa_accreditation_expiry.is_(None)
+            )
+        elif filter.poa_accreditation_expiry is not None:
+            filters.append(
+                EducationalProgramOrm.poa_accreditation_expiry
+                == filter.poa_accreditation_expiry
+            )
+        if filter.state_accreditation_expiry_is_null:
+            filters.append(
+                EducationalProgramOrm.state_accreditation_expiry.is_(None)
+            )
+        elif filter.state_accreditation_expiry is not None:
+            filters.append(
+                EducationalProgramOrm.state_accreditation_expiry
+                == filter.state_accreditation_expiry
+            )
+        if filter.title_contains is not None and filter.title_contains.strip():
+            filters.append(
+                EducationalProgramOrm.title.ilike(f"%{filter.title_contains}%")
+            )
+        if filter.school_id is not None:
+            filters.append(EducationalProgramOrm.school_id == filter.school_id)
+        if filter.degree_id is not None:
+            filters.append(EducationalProgramOrm.degree_id == filter.degree_id)
+        if no_partners:
+            query = query.outerjoin(
+                EducationalProgramToPartnerOrm,
+                EducationalProgramToPartnerOrm.educational_program_id
+                == EducationalProgramOrm.id,
+            )
+            filters.append(
+                EducationalProgramToPartnerOrm.partner_id.is_(None)
+            )
+        elif partner_ids:
+            query = query.join(
+                EducationalProgramToPartnerOrm,
+                EducationalProgramToPartnerOrm.educational_program_id
+                == EducationalProgramOrm.id,
+            ).distinct()
+            filters.append(
+                EducationalProgramToPartnerOrm.partner_id.in_(partner_ids)
+            )
+
+        return query, filters

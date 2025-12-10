@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from fastapi import BackgroundTasks
 from sqlalchemy import and_, select
@@ -23,6 +23,7 @@ from src.educational_program.educational_program_schema import (
     EducationalProgramGetViewSchema,
     EducationalProgramHierarchyViewSchema,
     EducationalProgramUpdateSchema,
+    EducationalProgramActiveGetFilterSchema,
 )
 from src.educational_program.educational_program_usecase import (
     EducationalProgramUsecase,
@@ -472,17 +473,29 @@ class EducationalProgramService:
 
     async def educational_program_active_get(
         self,
-        filter: EducationalProgramGetFilterSchema,
+        filter: EducationalProgramActiveGetFilterSchema,
+        partner_ids: Optional[list[int]] = None,
+        no_partners: Optional[bool] = None,
     ) -> EducationalProgramActiveViewSchema:
         result = await self.educational_program_repo.educational_program_active_get(
             filter=filter,
+            partner_ids=partner_ids,
+            no_partners=no_partners,
         )
 
         return result
 
     async def educational_program_get(
         self,
+        filter: EducationalProgramGetFilterSchema,
+        partner_ids: Optional[list[int]] = None,
+        no_partners: Optional[bool] = None,
     ) -> EducationalProgramGetViewSchema:
-        result = await self.educational_program_repo.educational_program_get()
+        result = await self.educational_program_repo.educational_program_get(
+            filter=filter,
+            partner_ids=partner_ids,
+            no_partners=no_partners,
+        )
 
         return result
+    

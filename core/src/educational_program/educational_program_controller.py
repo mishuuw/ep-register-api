@@ -1,6 +1,7 @@
-from typing import Literal
+from typing import Literal, List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
+from src.common.common_exc import WrongParametersHttpException
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema, SuccessSchema
@@ -13,6 +14,7 @@ from src.educational_program.educational_program_schema import (
     EducationalProgramGetViewSchema,
     EducationalProgramHierarchyViewSchema,
     EducationalProgramUpdateSchema,
+    EducationalProgramActiveGetFilterSchema
 )
 from src.educational_program.educational_program_service import (
     EducationalProgramService,
@@ -70,9 +72,36 @@ class EducationalProgramController:
         self,
         request: Request,
         response: Response,
+        filter: EducationalProgramGetFilterSchema = Depends(),
+        partner_ids: Optional[List[int]] = Query(
+            default=None,
+            description="List of partner IDs for filtering",
+        ),
+        no_partners: Optional[bool] = Query(
+            default=None,
+            description="If true, return programs that have no partners",
+        ),
     ) -> EducationalProgramGetViewSchema:
         await self.auth_service.admin_required(request=request, response=response)
-        return await self.educational_program_service.educational_program_get()
+        
+        if partner_ids and no_partners:
+            msg_en = "partner_ids and no_partners cannot be used together"
+            msg_ru = "параметры partner_ids и no_partners нельзя использовать одновременно"
+            raise WrongParametersHttpException(params=(msg_ru if self.lang == "ru" else msg_en), lang=self.lang)
+        if filter.poa_accreditation_expiry is not None and filter.poa_accreditation_expiry_is_null:
+            msg_en = "poa_accreditation_expiry and poa_accreditation_expiry_is_null cannot be used together"
+            msg_ru = "Нельзя одновременно использовать poa_accreditation_expiry и poa_accreditation_expiry_is_null"
+            raise WrongParametersHttpException(params=(msg_ru if self.lang == "ru" else msg_en), lang=self.lang)
+        if filter.state_accreditation_expiry is not None and filter.state_accreditation_expiry_is_null:
+            msg_en = "state_accreditation_expiry and state_accreditation_expiry_is_null cannot be used together"
+            msg_ru = "Нельзя одновременно использовать state_accreditation_expiry и state_accreditation_expiry_is_null"
+            raise WrongParametersHttpException(params=(msg_ru if self.lang == "ru" else msg_en), lang=self.lang)
+
+        return await self.educational_program_service.educational_program_get(
+            filter=filter,
+            partner_ids=partner_ids,
+            no_partners=no_partners,
+        )
 
     @educational_program_router.get("/active/get", tags=["educational_program"])
     @try_rollback
@@ -80,11 +109,35 @@ class EducationalProgramController:
         self,
         request: Request,
         response: Response,
-        filter: EducationalProgramGetFilterSchema = Depends(),
+        filter: EducationalProgramActiveGetFilterSchema = Depends(),
+        partner_ids: Optional[List[int]] = Query(
+            default=None,
+            description="List of partner IDs for filtering",
+        ),
+        no_partners: Optional[bool] = Query(
+            default=None,
+            description="If true, return programs that have no partners",
+        ),
     ) -> EducationalProgramActiveViewSchema:
         await self.auth_service.admin_required(request=request, response=response)
+
+        if partner_ids and no_partners:
+            msg_en = "partner_ids and no_partners cannot be used together"
+            msg_ru = "параметры partner_ids и no_partners нельзя использовать одновременно"
+            raise WrongParametersHttpException(params=(msg_ru if self.lang == "ru" else msg_en), lang=self.lang)
+        if filter.poa_accreditation_expiry is not None and filter.poa_accreditation_expiry_is_null:
+            msg_en = "poa_accreditation_expiry and poa_accreditation_expiry_is_null cannot be used together"
+            msg_ru = "Нельзя одновременно использовать poa_accreditation_expiry и poa_accreditation_expiry_is_null"
+            raise WrongParametersHttpException(params=(msg_ru if self.lang == "ru" else msg_en), lang=self.lang)
+        if filter.state_accreditation_expiry is not None and filter.state_accreditation_expiry_is_null:
+            msg_en = "state_accreditation_expiry and state_accreditation_expiry_is_null cannot be used together"
+            msg_ru = "Нельзя одновременно использовать state_accreditation_expiry и state_accreditation_expiry_is_null"
+            raise WrongParametersHttpException(params=(msg_ru if self.lang == "ru" else msg_en), lang=self.lang)
+        
         return await self.educational_program_service.educational_program_active_get(
             filter=filter,
+            partner_ids=partner_ids,
+            no_partners=no_partners,
         )
 
     @educational_program_router.post("/add", tags=["educational_program"])

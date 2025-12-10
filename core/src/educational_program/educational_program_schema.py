@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import List, Optional
+from typing import List, Optional, Literal
 
 from pydantic import BaseModel, Field
 from src.models.enum import (
@@ -97,12 +97,43 @@ class EducationalProgramAddSchema(EducationalProgramSchema):
 
 
 class EducationalProgramGetFilterSchema(BaseModel):
-    field_of_study_id: Optional[int] = Field(
-        None, description="Field of Study ID for filtering"
+    mode: Optional[Literal["and", "or"]] = Field(
+        "and",
+        description="Режим фильтрации (AND/OR)"
     )
-    start_year: Optional[int] = Field(None, description="Start year for filtering")
-    end_year: Optional[int] = Field(None, description="End year for filtering")
 
+    network_form: Optional[NetworkFormEnum] = Field(None, description="Network form")
+    educational_form: Optional[EducationalFormEnum] = Field(
+        None, description="Educational form"
+    )
+    educational_standard_type: Optional[EducationalstandardEnum] = Field(
+        None, description="Educational standard type"
+    )
+    language: Optional[EducationalProgramLanguageTypeEnum] = Field(
+        None, description="Language"
+    )
+    language_hours: Optional[int] = Field(None, description="Language hours")
+    standard_duration_months: Optional[int] = Field(
+        None, description="Standard duration in months"
+    )
+    poa_accreditation_company: Optional[str] = Field(
+        None, description="POA accreditation company"
+    )
+    poa_accreditation_expiry: Optional[date] = Field(
+        None, description="POA accreditation expiry date"
+    )
+    poa_accreditation_expiry_is_null: Optional[bool] = Field(
+        None, description="If true, filter programs that have no POA accreditation expiry"
+    )
+    state_accreditation_expiry: Optional[date] = Field(
+        None, description="State accreditation expiry date"
+    )
+    state_accreditation_expiry_is_null: Optional[bool] = Field(
+        None, description="If true, filter programs that have no state accreditation expiry"
+    )
+    title_contains: Optional[str] = Field(None, description="Partial search by title")
+    school_id: Optional[int] = Field(None, description="School ID")
+    degree_id: Optional[int] = Field(None, description="Degree ID")
 
 class EducationalProgramGetViewSchema(BaseModel):
     count: int = Field(..., description="Total count")
@@ -116,6 +147,12 @@ class EducationalProgramActiveSchema(EducationalProgramGetSchema):
     start_year: int = Field(..., description="Start year")
     end_year: int = Field(..., description="End year")
 
+class EducationalProgramActiveGetFilterSchema(EducationalProgramGetFilterSchema):
+    field_of_study_id: Optional[int] = Field(
+        None, description="Field of Study ID for filtering"
+    )
+    start_year: Optional[int] = Field(None, description="Start year for filtering")
+    end_year: Optional[int] = Field(None, description="End year for filtering")
 
 class EducationalProgramActiveViewSchema(BaseModel):
     count: int = Field(..., description="Total count")
