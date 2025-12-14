@@ -127,9 +127,6 @@ class EducationalProgramActiveViewSchema(BaseModel):
 # Схемы для иерархии ОП
 class EducationalProgramHierarchySchema(EducationalProgramGetSchema):
     parent_id: Optional[int] = Field(None, description="Parent educational program ID")
-    parent: Optional[EducationalProgramHierarchySchema] = Field(
-        None, description="Parent educational program"
-    )
     children: List[EducationalProgramHierarchySchema] = Field(
         default_factory=list, description="Child educational programs"
     )

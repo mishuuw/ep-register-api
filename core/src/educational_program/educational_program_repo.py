@@ -75,9 +75,39 @@ class EducationalProgramRepository:
         self,
         educational_program_id: int,
     ) -> EducationalProgramHierarchyViewSchema:
+        # make sure program exists
+        exists = await self.session.scalar(
+            select(EducationalProgramOrm.id).where(
+                EducationalProgramOrm.id == educational_program_id
+            )
+        )
+        if exists is None:
+            raise NotFoundHttpException(
+                lang=self.lang,
+                name="образовательная программа",
+                name_en="educational program",
+            )
+
+        # find top-most ancestor (master parent)
+        current = educational_program_id
+        parent = await self.session.scalar(
+            select(EducationalProgramOrm.parent_id).where(
+                EducationalProgramOrm.id == current
+            )
+        )
+        while parent is not None:
+            current = parent
+            parent = await self.session.scalar(
+                select(EducationalProgramOrm.parent_id).where(
+                    EducationalProgramOrm.id == current
+                )
+            )
+        master_parent_id = current
+
+        # build the subtree starting from master parent
         program_tree = (
             select(EducationalProgramOrm.id)
-            .where(EducationalProgramOrm.id == educational_program_id)
+            .where(EducationalProgramOrm.id == master_parent_id)
             .cte(name="program_tree", recursive=True)
         )
 
@@ -95,8 +125,6 @@ class EducationalProgramRepository:
             .order_by(EducationalProgramOrm.parent_id, EducationalProgramOrm.id)
         )
         rows = (await self.session.execute(query)).all()
-        if not rows:
-            raise NotFoundHttpException(name="образовательная программа")
 
         program_ids = [ep.id for ep, *_ in rows]
         unique_program_ids = sorted(set(program_ids))
@@ -104,11 +132,9 @@ class EducationalProgramRepository:
         active_map = await self._get_latest_active_map(unique_program_ids)
 
         node_map: dict[int, EducationalProgramHierarchySchema] = {}
-        parent_lookup: dict[int, int | None] = {}
         for ep, school, degree in rows:
             active_entry = active_map.get(ep.id)
             active, fos = active_entry if active_entry else (None, None)
-            parent_lookup[ep.id] = ep.parent_id
             node_map[ep.id] = EducationalProgramHierarchySchema(
                 parent_id=ep.parent_id,
                 title=ep.title,
@@ -128,7 +154,6 @@ class EducationalProgramRepository:
                 poa_accreditation_company=ep.poa_accreditation_company,
                 state_accreditation_expiry=ep.state_accreditation_expiry,
                 description=ep.description,
-                parent=None,
                 children=[],
                 is_active=active is not None,
                 field_of_study_title=fos.title if fos is not None else None,
@@ -142,82 +167,13 @@ class EducationalProgramRepository:
                 parent_schema = node_map[ep.parent_id]
                 parent_schema.children.append(node_map[ep.id])
 
-        root = node_map.get(educational_program_id)
+        root = node_map.get(master_parent_id)
         if root is None:
-            raise NotFoundHttpException(
-                lang=self.lang,
-                name="образовательная программа",
-                name_en="educational program",
-            )
-
-        ancestor_ids: list[int] = []
-        current_parent_id = parent_lookup.get(educational_program_id)
-        while current_parent_id is not None:
-            ancestor_ids.append(current_parent_id)
-            current_parent_id = await self.session.scalar(
-                select(EducationalProgramOrm.parent_id).where(
-                    EducationalProgramOrm.id == current_parent_id
-                )
-            )
-
-        if ancestor_ids:
-            ancestor_rows = (
-                await self.session.execute(
-                    select(EducationalProgramOrm, SchoolOrm, DegreeOrm)
-                    .where(EducationalProgramOrm.id.in_(ancestor_ids))
-                    .outerjoin(
-                        SchoolOrm, SchoolOrm.id == EducationalProgramOrm.school_id
-                    )
-                    .outerjoin(
-                        DegreeOrm, DegreeOrm.id == EducationalProgramOrm.degree_id
-                    )
-                )
-            ).all()
-            ancestor_row_map = {
-                ep.id: (ep, school, degree) for ep, school, degree in ancestor_rows
-            }
-            ancestor_partner_map = await self._get_partners_by_program_ids(ancestor_ids)
-            ancestor_active_map = await self._get_latest_active_map(ancestor_ids)
-
-            parent_chain = None
-            for ancestor_id in reversed(ancestor_ids):
-                row = ancestor_row_map.get(ancestor_id)
-                if row is None:
-                    continue
-                ep, school, degree = row
-                active_entry = ancestor_active_map.get(ep.id)
-                active, fos = active_entry if active_entry else (None, None)
-                parent_chain = EducationalProgramHierarchySchema(
-                    title=ep.title,
-                    title_short=ep.title_short,
-                    degree_title=degree.title if degree is not None else None,
-                    school_title=school.title if school is not None else None,
-                    school_code=school.code if school is not None else None,
-                    partner_titles=ancestor_partner_map.get(ep.id, []),
-                    id=ep.id,
-                    parent_id=ep.parent_id,
-                    network_form=ep.network_form,
-                    educational_form=ep.educational_form,
-                    educational_standard_type=ep.educational_standard_type,
-                    language=ep.language,
-                    language_hours=ep.language_hours,
-                    standard_duration_months=ep.standard_duration_months,
-                    poa_accreditation_expiry=ep.poa_accreditation_expiry,
-                    poa_accreditation_company=ep.poa_accreditation_company,
-                    state_accreditation_expiry=ep.state_accreditation_expiry,
-                    description=ep.description,
-                    parent=parent_chain,
-                    children=[],
-                    is_active=active is not None,
-                    field_of_study_title=fos.title if fos is not None else None,
-                    field_of_study_code=fos.code if fos is not None else None,
-                    start_year=active.start_year if active is not None else None,
-                    end_year=active.end_year if active is not None else None,
-                )
-            root.parent = parent_chain
+            # defensive: if tree is empty for some reason, raise not found
+            raise NotFoundHttpException(name="образовательная программа")
 
         return EducationalProgramHierarchyViewSchema(
-            count=len(set(node_map.keys()) | set(ancestor_ids)),
+            count=len(set(node_map.keys())),
             result=[root],
         )
 
