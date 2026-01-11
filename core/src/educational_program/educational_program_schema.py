@@ -50,6 +50,7 @@ class EducationalProgramGetSchema(EducationalProgramSchema):
     school_code: Optional[str] = Field(None, description="School code")
     degree_title: Optional[str] = Field(None, description="Degree title")
     partner_titles: Optional[List[str]] = Field(None, description="Partner titles")
+    tags: Optional[dict[str, dict]] = Field(default_factory=dict, description="Tags")
     id: int = Field(..., description="Educational Program ID")
 
 
@@ -72,6 +73,9 @@ class EducationalProgramUpdateSchema(EducationalProgramCoreFields):
     parent_id: Optional[int] = Field(None, description="Parent educational program ID")
     school_id: Optional[int] = Field(None, description="School ID")
     degree_id: Optional[int] = Field(None, description="Degree ID")
+    tag_ids: Optional[List[int]] = Field(
+        default_factory=list, description="List of tag IDs"
+    )
 
 
 class EducationalProgramAddSchema(EducationalProgramSchema):
@@ -93,6 +97,9 @@ class EducationalProgramAddSchema(EducationalProgramSchema):
     end_year: Optional[int] = Field(None, description="End year for filtering")
     is_active: Optional[bool] = Field(
         False, description="Is the educational program active"
+    )
+    tag_ids: Optional[List[int]] = Field(
+        default_factory=list, description="List of tag IDs"
     )
 
 

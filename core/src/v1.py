@@ -13,6 +13,7 @@ from src.field_of_study.field_of_study_controller import field_of_study_router
 from src.school.school_controller import school_router
 from src.user.user_controller import user_router
 from src.auth.auth_controller import auth_router
+from src.tag.tag_controller import tag_router
 
 api_router = APIRouter()
 
@@ -31,7 +32,7 @@ api_router.include_router(field_of_study_router, prefix="/field_of_study")
 api_router.include_router(school_router, prefix="/school")
 api_router.include_router(user_router, prefix="/user")
 api_router.include_router(auth_router, prefix="/auth")
-
+api_router.include_router(tag_router, prefix="/tag")
 
 @api_router.get("/healthcheck")
 async def healthcheck():

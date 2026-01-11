@@ -37,3 +37,4 @@ class FieldOfStudyGetViewSchema(BaseModel):
     result: List[FieldOfStudyGetSchema] = Field(
         ..., description="List of Fields of Study"
     )
+

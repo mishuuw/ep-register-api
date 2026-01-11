@@ -51,3 +51,9 @@ class DeleteBehaviorEnum(enum.Enum):
     RESTRICT = "RESTRICT"
     CASCADE = "CASCADE"
     SET_NULL = "SET NULL"
+
+class TagTypeEnum(enum.Enum):
+    SIMPLE = "SIMPLE"
+    BOOLEAN = "BOOLEAN"
+    NUMBER = "NUMBER"
+    TEXT = "TEXT"

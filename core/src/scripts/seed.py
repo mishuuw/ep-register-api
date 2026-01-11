@@ -13,6 +13,7 @@ from src.models.enum import (
     EducationalProgramPartnerEnum,
     EducationalstandardEnum,
     NetworkFormEnum,
+    TagTypeEnum,
 )
 from src.models.educational_program import (
     EducationalProgramActiveOrm,
@@ -23,6 +24,7 @@ from src.models.educational_program_partner import EducationalProgramPartnerOrm
 from src.models.field_of_study import FieldOfStudyOrm
 from src.models.school import SchoolOrm
 from src.models.user import UserOrm
+from src.models.tag import (TagOrm, TagToEducationalProgramOrm)
 from src.models.auth import CredentialsOrm
 from src.auth.auth_usecase import AuthUsecase
 from src.utils.db_util import get_session
@@ -122,6 +124,55 @@ async def seed(session: AsyncSession) -> None:
 
     await session.flush()
 
+    # Tags
+    tag_ege, _ = await upsert(
+        session,
+        TagOrm,
+        where={"name": "Балл ЕГЭ"},
+        values={
+            "type": TagTypeEnum.NUMBER,
+            "number_value": 231,
+            "text_value": None,
+            "boolean_value": None,
+        },
+    )
+
+    tag_project, _ = await upsert(
+        session,
+        TagOrm,
+        where={"name": "Национальный проект"},
+        values={
+            "type": TagTypeEnum.BOOLEAN,
+            "boolean_value": True,
+            "number_value": None,
+            "text_value": None,
+        },
+    )
+
+    tag_simple, _ = await upsert(
+        session,
+        TagOrm,
+        where={"name": "Норм"},
+        values={
+            "type": TagTypeEnum.SIMPLE,
+            "boolean_value": None,
+            "number_value": None,
+            "text_value": None,
+        },
+    )
+
+    tag_text, _ = await upsert(
+        session,
+        TagOrm,
+        where={"name": "Руководитель"},
+        values={
+            "type": TagTypeEnum.TEXT,
+            "text_value": "Василий Пупкин",
+            "boolean_value": None,
+            "number_value": None,
+        },
+    )
+
     # Educational programs linked via parent-child relationship
     base_program, _ = await upsert(
         session,
@@ -206,6 +257,23 @@ async def seed(session: AsyncSession) -> None:
             values={},
         )
 
+    # Link educational programs to tags via junction table
+    for program, tag in (
+        (base_program, tag_ege),
+        (core_program, tag_project),
+        (advanced_program, tag_simple),
+        (advanced_program, tag_text),
+    ):
+        await upsert(
+            session,
+            TagToEducationalProgramOrm,
+            where={
+                "educational_program_id": program.id,
+                "tag_id": tag.id,
+            },
+            values={},
+        )
+    
     # Educational program active periods (make all programs active with different FoS)
     await upsert(
         session,

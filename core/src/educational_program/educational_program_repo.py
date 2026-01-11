@@ -22,6 +22,7 @@ from src.models.educational_program import (
     EducationalProgramToPartnerOrm,
 )
 from src.models.educational_program_partner import EducationalProgramPartnerOrm
+from src.models.tag import TagOrm, TagToEducationalProgramOrm
 from src.models.field_of_study import FieldOfStudyOrm
 from src.models.school import SchoolOrm
 
@@ -55,7 +56,7 @@ class EducationalProgramRepository:
             )
         )
 
-        rows = (
+        rows = (    
             (await self.session.execute(select(descendants_cte.c.id))).scalars().all()
         )
         return rows
@@ -129,6 +130,7 @@ class EducationalProgramRepository:
         program_ids = [ep.id for ep, *_ in rows]
         unique_program_ids = sorted(set(program_ids))
         partner_map = await self._get_partners_by_program_ids(unique_program_ids)
+        tag_map = await self._get_tags_by_program_ids(unique_program_ids)
         active_map = await self._get_latest_active_map(unique_program_ids)
 
         node_map: dict[int, EducationalProgramHierarchySchema] = {}
@@ -160,6 +162,7 @@ class EducationalProgramRepository:
                 field_of_study_code=fos.code if fos is not None else None,
                 start_year=active.start_year if active is not None else None,
                 end_year=active.end_year if active is not None else None,
+                tags=tag_map.get(ep.id, {}),
             )
 
         for ep, _, _ in rows:
@@ -206,6 +209,48 @@ class EducationalProgramRepository:
             for program_id, partner_titles in grouped.items()
         }
 
+    async def _get_tags_by_program_ids(
+        self, program_ids: list[int]
+    ) -> dict[int, dict]:
+        if not program_ids:
+            return {}
+        
+        rows = (
+            await self.session.execute(
+                select(TagToEducationalProgramOrm, TagOrm)
+                .where(
+                    TagToEducationalProgramOrm.educational_program_id.in_(
+                        program_ids
+                    )
+                )
+                .join(
+                    TagOrm,
+                    TagOrm.id == TagToEducationalProgramOrm.tag_id,
+                )
+            )
+        ).all()
+        
+        grouped: dict[int, dict[str, dict]] = defaultdict(dict)
+        
+        for junction, tag in rows:
+            if tag is None:
+                continue
+            
+            program_id = junction.educational_program_id
+            tag_name = tag.name
+            tag_type = tag.type.value
+            value = tag.get_value()
+            
+            grouped[program_id][tag_name] = {
+                "value": value,
+                "type": tag_type
+            }
+        
+        return {
+            program_id: tag_dict
+            for program_id, tag_dict in grouped.items()
+        }
+    
     async def _get_latest_active_map(
         self, program_ids: list[int]
     ) -> dict[int, tuple[EducationalProgramActiveOrm, FieldOfStudyOrm]]:
@@ -273,6 +318,9 @@ class EducationalProgramRepository:
         partner_map = await self._get_partners_by_program_ids(
             sorted({ep.id for _, _, ep, _, _ in result})
         )
+        tag_map = await self._get_tags_by_program_ids(
+            sorted({ep.id for _, _, ep, _, _ in result})
+        )
 
         schemas = []
         for epa, f_o_s, ep, school, deg in result:
@@ -299,6 +347,7 @@ class EducationalProgramRepository:
                     poa_accreditation_company=ep.poa_accreditation_company,
                     state_accreditation_expiry=ep.state_accreditation_expiry,
                     description=ep.description,
+                    tags=tag_map.get(ep.id, {}),
                 )
             )
 
@@ -323,6 +372,9 @@ class EducationalProgramRepository:
         partner_map = await self._get_partners_by_program_ids(
             sorted({ep.id for ep, *_ in result})
         )
+        tag_map = await self._get_tags_by_program_ids(
+            sorted({ep.id for ep, *_ in result})
+        )
 
         schemas = []
         for ep, school, deg in result:
@@ -345,6 +397,7 @@ class EducationalProgramRepository:
                     poa_accreditation_company=ep.poa_accreditation_company,
                     state_accreditation_expiry=ep.state_accreditation_expiry,
                     description=ep.description,
+                    tags=tag_map.get(ep.id, {}),
                 )
             )
 
