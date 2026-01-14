@@ -26,7 +26,7 @@ class TagSchema(BaseModel):
                 raise ValueError("text_value is required for text type")
         return self
 
-    def get_value(self) -> Union[str, bool, None]:
+    def get_value(self) -> Union[str, bool, int, None]:
         if self.type == TagTypeEnum.BOOLEAN:
             return self.boolean_value
         elif self.type == TagTypeEnum.NUMBER:
@@ -40,7 +40,7 @@ class TagGetSchema(BaseModel):
     id: int = Field(..., description="Tag ID")
     name: str = Field(..., description="Tag name")
     type: str = Field(..., description="Tag type: simple, boolean, number, text")
-    value: Union[str, bool, None] = Field(None, description="Tag value based on type")
+    value: Union[str, bool, int, None] = Field(None, description="Tag value based on type")
 
 
 class TagUpdateSchema(BaseModel):
@@ -48,7 +48,7 @@ class TagUpdateSchema(BaseModel):
     name: Optional[str] = Field(None, description="Tag name")
     type: Optional[str] = Field(None, description="Tag type: simple, boolean, number, text")
     boolean_value: Optional[bool] = Field(None, description="Boolean value")
-    number_value: Optional[str] = Field(None, description="Number value")
+    number_value: Optional[int] = Field(None, description="Number value")
     text_value: Optional[str] = Field(None, description="Text value")
 
 
