@@ -62,6 +62,7 @@ class Settings(BaseSettings):
         # "*",
         # "http://localhost",
         "http://localhost:8080",  # frontend dev
+        "http://localhost:5173",  # frontend dev
     }
 
 

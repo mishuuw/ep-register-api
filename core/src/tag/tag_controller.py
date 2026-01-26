@@ -9,7 +9,14 @@ from src.config.settings import get_settings
 from src.tag.tag_schema import (
     TagGetViewSchema,
     TagSchema,
-    TagUpdateSchema
+    TagUpdateSchema,
+    TagGroupedViewSchema,
+    TagToFamilyAddSchema,
+    TagToFamilyRemoveSchema,
+    TagToFamilyUpdateSchema,
+    TagToProgramAddSchema,
+    TagToProgramRemoveSchema,
+    TagToProgramUpdateSchema,
 )
 from src.tag.tag_service import (
     TagService,
@@ -57,6 +64,18 @@ class TagController:
         await self.auth_service.admin_required(request=request, response=response)
         service = self.tag_service
         return await service.tag_get()
+
+    @tag_router.get("/grouped/get", tags=["tag"])
+    @try_rollback
+    async def tag_get_grouped(
+        self,
+        request: Request,
+        response: Response,
+    ) -> TagGroupedViewSchema:
+        """Get all tags grouped by name (same name, different values)"""
+        await self.auth_service.admin_required(request=request, response=response)
+        service = self.tag_service
+        return await service.tag_get_grouped()
     
     @tag_router.post("/add", tags=["tag"])
     @try_rollback
@@ -99,3 +118,75 @@ class TagController:
         return await service.tag_delete(
             tag_id=tag_id,
         )
+
+    @tag_router.post("/program/add", tags=["tag"])
+    @try_rollback
+    async def tag_to_program_add(
+        self,
+        request: Request,
+        response: Response,
+        data: TagToProgramAddSchema,
+    ) -> SuccessSchema:
+        """Add tags to a single educational program"""
+        await self.auth_service.admin_required(request=request, response=response)
+        return await self.tag_service.tag_to_program_add(data=data)
+
+    @tag_router.post("/program/remove", tags=["tag"])
+    @try_rollback
+    async def tag_to_program_remove(
+        self,
+        request: Request,
+        response: Response,
+        data: TagToProgramRemoveSchema,
+    ) -> SuccessSchema:
+        """Remove tags from a single educational program"""
+        await self.auth_service.admin_required(request=request, response=response)
+        return await self.tag_service.tag_to_program_remove(data=data)
+
+    @tag_router.put("/program/update", tags=["tag"])
+    @try_rollback
+    async def tag_to_program_update(
+        self,
+        request: Request,
+        response: Response,
+        data: TagToProgramUpdateSchema,
+    ) -> SuccessSchema:
+        """Replace all tags for a single educational program"""
+        await self.auth_service.admin_required(request=request, response=response)
+        return await self.tag_service.tag_to_program_update(data=data)
+
+    @tag_router.post("/family/add", tags=["tag"])
+    @try_rollback
+    async def tag_to_family_add(
+        self,
+        request: Request,
+        response: Response,
+        data: TagToFamilyAddSchema,
+    ) -> SuccessSchema:
+        """Add tags to all programs in a family (entire hierarchy)"""
+        await self.auth_service.admin_required(request=request, response=response)
+        return await self.tag_service.tag_to_family_add(data=data)
+
+    @tag_router.post("/family/remove", tags=["tag"])
+    @try_rollback
+    async def tag_to_family_remove(
+        self,
+        request: Request,
+        response: Response,
+        data: TagToFamilyRemoveSchema,
+    ) -> SuccessSchema:
+        """Remove tags from all programs in a family (entire hierarchy)"""
+        await self.auth_service.admin_required(request=request, response=response)
+        return await self.tag_service.tag_to_family_remove(data=data)
+
+    @tag_router.put("/family/update", tags=["tag"])
+    @try_rollback
+    async def tag_to_family_update(
+        self,
+        request: Request,
+        response: Response,
+        data: TagToFamilyUpdateSchema,
+    ) -> SuccessSchema:
+        """Replace all tags for all programs in a family (entire hierarchy)"""
+        await self.auth_service.admin_required(request=request, response=response)
+        return await self.tag_service.tag_to_family_update(data=data)

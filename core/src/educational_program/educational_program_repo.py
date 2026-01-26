@@ -1,5 +1,5 @@
 from collections import defaultdict
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func
 from typing import Literal
 
 from fastapi import BackgroundTasks
@@ -239,11 +239,13 @@ class EducationalProgramRepository:
             program_id = junction.educational_program_id
             tag_name = tag.name
             tag_type = tag.type.value
+            tag_id = tag.id
             value = tag.get_value()
             
             grouped[program_id][tag_name] = {
                 "value": value,
-                "type": tag_type
+                "type": tag_type,
+                "id": tag_id,
             }
         
         return {
@@ -314,6 +316,15 @@ class EducationalProgramRepository:
         )
 
         result = (await self.session.execute(query)).all()
+        all_program_ids = sorted({ep.id for _, _, ep, _, _ in result})
+
+        filtered_program_ids = await self._apply_tag_filters(
+            all_program_ids, filter
+        )
+        if not filtered_program_ids:
+            return EducationalProgramActiveViewSchema(count=0, result=[])
+
+        result = [r for r in result if r[2].id in filtered_program_ids]
         active_ids = {epa.id for epa, *_ in result}
         partner_map = await self._get_partners_by_program_ids(
             sorted({ep.id for _, _, ep, _, _ in result})
@@ -405,3 +416,66 @@ class EducationalProgramRepository:
             count=len({ep.id for ep, *_ in result}),
             result=schemas,
         )
+
+    async def _apply_tag_filters(
+        self,
+        base_program_ids: list[int],
+        filter: EducationalProgramGetFilterSchema,
+    ) -> list[int]:
+        include_ids = filter.include_tag_ids or []
+        exclude_ids = filter.exclude_tag_ids or []
+
+        if not include_ids and not exclude_ids:
+            return base_program_ids
+
+        if not base_program_ids:
+            return []
+
+        base_query = select(EducationalProgramOrm.id).where(
+            EducationalProgramOrm.id.in_(base_program_ids)
+        ).distinct()
+
+        if include_ids:
+            if filter.include_logic.value == "AND":
+                for tag_id in include_ids:
+                    subq = (
+                        select(TagToEducationalProgramOrm.educational_program_id)
+                        .where(TagToEducationalProgramOrm.tag_id == tag_id)
+                    )
+                    base_query = base_query.where(
+                        EducationalProgramOrm.id.in_(subq)
+                    )
+            else:
+                subq = (
+                    select(TagToEducationalProgramOrm.educational_program_id)
+                    .where(TagToEducationalProgramOrm.tag_id.in_(include_ids))
+                )
+                base_query = base_query.where(
+                    EducationalProgramOrm.id.in_(subq)
+                )
+
+        if exclude_ids:
+            if filter.exclude_logic.value == "OR":
+                subq = (
+                    select(TagToEducationalProgramOrm.educational_program_id)
+                    .where(TagToEducationalProgramOrm.tag_id.in_(exclude_ids))
+                )
+                base_query = base_query.where(
+                    EducationalProgramOrm.id.not_in(subq)
+                )
+            else:
+                subq = (
+                    select(TagToEducationalProgramOrm.educational_program_id)
+                    .where(TagToEducationalProgramOrm.tag_id.in_(exclude_ids))
+                    .group_by(TagToEducationalProgramOrm.educational_program_id)
+                    .having(
+                        func.count(TagToEducationalProgramOrm.tag_id.distinct())
+                        == len(exclude_ids)
+                    )
+                )
+                base_query = base_query.where(
+                    EducationalProgramOrm.id.not_in(subq)
+                )
+
+        program_ids = (await self.session.execute(base_query)).scalars().all()
+        return list(program_ids)

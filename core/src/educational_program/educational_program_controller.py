@@ -80,9 +80,24 @@ class EducationalProgramController:
         self,
         request: Request,
         response: Response,
-        filter: EducationalProgramGetFilterSchema = Depends(),
+        field_of_study_id: int = Query(None, description="Field of Study ID for filtering"),
+        start_year: int = Query(None, description="Start year for filtering"),
+        end_year: int = Query(None, description="End year for filtering"),
+        include_tag_ids: list[int] = Query(None, description="Tag IDs to include"),
+        exclude_tag_ids: list[int] = Query(None, description="Tag IDs to exclude"),
+        include_logic: str = Query("AND", description="AND or OR for include tags"),
+        exclude_logic: str = Query("OR", description="AND or OR for exclude tags"),
     ) -> EducationalProgramActiveViewSchema:
         await self.auth_service.admin_required(request=request, response=response)
+        filter = EducationalProgramGetFilterSchema(
+            field_of_study_id=field_of_study_id,
+            start_year=start_year,
+            end_year=end_year,
+            include_tag_ids=include_tag_ids or [],
+            exclude_tag_ids=exclude_tag_ids or [],
+            include_logic=include_logic,
+            exclude_logic=exclude_logic,
+        )
         return await self.educational_program_service.educational_program_active_get(
             filter=filter,
         )

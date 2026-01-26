@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
@@ -73,9 +74,6 @@ class EducationalProgramUpdateSchema(EducationalProgramCoreFields):
     parent_id: Optional[int] = Field(None, description="Parent educational program ID")
     school_id: Optional[int] = Field(None, description="School ID")
     degree_id: Optional[int] = Field(None, description="Degree ID")
-    tag_ids: Optional[List[int]] = Field(
-        default_factory=list, description="List of tag IDs"
-    )
 
 
 class EducationalProgramAddSchema(EducationalProgramSchema):
@@ -98,17 +96,34 @@ class EducationalProgramAddSchema(EducationalProgramSchema):
     is_active: Optional[bool] = Field(
         False, description="Is the educational program active"
     )
-    tag_ids: Optional[List[int]] = Field(
-        default_factory=list, description="List of tag IDs"
-    )
 
 
 class EducationalProgramGetFilterSchema(BaseModel):
+    class FilterLogicEnum(str, Enum):
+        AND = "AND"
+        OR = "OR"
+
     field_of_study_id: Optional[int] = Field(
         None, description="Field of Study ID for filtering"
     )
     start_year: Optional[int] = Field(None, description="Start year for filtering")
     end_year: Optional[int] = Field(None, description="End year for filtering")
+    include_tag_ids: Optional[List[int]] = Field(
+        default_factory=list,
+        description="Tag IDs to include (programs must have these tags)"
+    )
+    exclude_tag_ids: Optional[List[int]] = Field(
+        default_factory=list,
+        description="Tag IDs to exclude (programs must NOT have these tags)"
+    )
+    include_logic: FilterLogicEnum = Field(
+        default=FilterLogicEnum.AND,
+        description="Logic for include tags: AND (must have all) or OR (must have at least one)"
+    )
+    exclude_logic: FilterLogicEnum = Field(
+        default=FilterLogicEnum.OR,
+        description="Logic for exclude tags: AND (must not have all) or OR (must not have any)"
+    )
 
 
 class EducationalProgramGetViewSchema(BaseModel):

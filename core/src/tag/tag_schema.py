@@ -60,3 +60,49 @@ class TagGetViewSchema(BaseModel):
 class TagToEducationalProgramSchema(BaseModel):
     tag_id: int = Field(..., description="Tag ID")
     educational_program_id: int = Field(..., description="Educational Program ID")
+
+
+class TagValueSchema(BaseModel):
+    id: int = Field(..., description="Tag ID")
+    value: Union[str, bool, int, None] = Field(None, description="Tag value based on type")
+    type: str = Field(..., description="Tag type: simple, boolean, number, text")
+
+
+class TagGroupedSchema(BaseModel):
+    name: str = Field(..., description="Tag name")
+    values: List[TagValueSchema] = Field(..., description="List of values for this tag name")
+
+
+class TagGroupedViewSchema(BaseModel):
+    count: int = Field(..., description="Total count of unique tag names")
+    result: List[TagGroupedSchema] = Field(..., description="List of grouped tags")
+
+
+class TagToFamilyAddSchema(BaseModel):
+    educational_program_id: int = Field(..., description="Root educational program ID of the family")
+    tag_ids: List[int] = Field(..., description="List of tag IDs to add")
+
+
+class TagToFamilyRemoveSchema(BaseModel):
+    educational_program_id: int = Field(..., description="Root educational program ID of the family")
+    tag_ids: List[int] = Field(..., description="List of tag IDs to remove")
+
+
+class TagToFamilyUpdateSchema(BaseModel):
+    educational_program_id: int = Field(..., description="Root educational program ID of the family")
+    tag_ids: List[int] = Field(..., description="New list of tag IDs (replaces existing)")
+
+
+class TagToProgramAddSchema(BaseModel):
+    educational_program_id: int = Field(..., description="Educational program ID")
+    tag_ids: List[int] = Field(..., description="List of tag IDs to add")
+
+
+class TagToProgramRemoveSchema(BaseModel):
+    educational_program_id: int = Field(..., description="Educational program ID")
+    tag_ids: List[int] = Field(..., description="List of tag IDs to remove")
+
+
+class TagToProgramUpdateSchema(BaseModel):
+    educational_program_id: int = Field(..., description="Educational program ID")
+    tag_ids: List[int] = Field(..., description="New list of tag IDs (replaces existing)")

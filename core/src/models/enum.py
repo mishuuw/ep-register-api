@@ -57,3 +57,7 @@ class TagTypeEnum(enum.Enum):
     BOOLEAN = "BOOLEAN"
     NUMBER = "NUMBER"
     TEXT = "TEXT"
+
+class FilterLogicEnum(enum.Enum):
+    AND = "AND"
+    OR = "OR"

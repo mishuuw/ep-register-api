@@ -34,7 +34,6 @@ from src.models.educational_program import (
     EducationalProgramToPartnerOrm,
 )
 from src.models.educational_program_partner import EducationalProgramPartnerOrm
-from src.models.tag import TagOrm, TagToEducationalProgramOrm
 from src.models.enum import DeleteBehaviorEnum
 from src.models.field_of_study import FieldOfStudyOrm
 from src.models.school import SchoolOrm
@@ -94,14 +93,6 @@ class EducationalProgramService:
                         id=partner_id,
                     )
                 )
-        if data.tag_ids:
-            for tag_id in data.tag_ids:
-                dependencies.append(
-                    DependencyCheckSchema(
-                        table=TagOrm,
-                        id=tag_id,
-                    )
-                )
         if data.school_id is not None:
             dependencies.append(
                 DependencyCheckSchema(
@@ -158,12 +149,6 @@ class EducationalProgramService:
             partner_ids = data_filtered.pop("partner_ids")
         else:
             partner_ids = None
-        
-        tag_ids_provided = "tag_ids" in data_filtered
-        if tag_ids_provided:
-            tag_ids = data_filtered.pop("tag_ids")
-        else:
-            tag_ids = None
 
         # Update object in database
         upd_obj = await self.common_repo.update(EducationalProgramOrm(**data_filtered))
@@ -182,23 +167,6 @@ class EducationalProgramService:
                             partner_id=partner_id,
                         )
                         for partner_id in partner_ids
-                    ]
-                )
-
-        # If needed, update tag links
-        if tag_ids_provided:
-            await self.common_repo.delete(
-                TagToEducationalProgramOrm,
-                TagToEducationalProgramOrm.educational_program_id == upd_obj.id,
-            )
-            if tag_ids:
-                await self.common_repo.add_all(
-                    [
-                        TagToEducationalProgramOrm(
-                            educational_program_id=upd_obj.id,
-                            tag_id=tag_id,
-                        )
-                        for tag_id in tag_ids
                     ]
                 )
 
@@ -417,14 +385,6 @@ class EducationalProgramService:
                         id=partner_id,
                     )
                 )
-        if data.tag_ids:
-            for tag_id in data.tag_ids:
-                dependencies.append(
-                    DependencyCheckSchema(
-                        table=TagOrm,
-                        id=tag_id,
-                    ) 
-                )
         if data.field_of_study_id is not None:
             dependencies.append(
                 DependencyCheckSchema(
@@ -487,16 +447,6 @@ class EducationalProgramService:
                         partner_id=partner_id,
                     )
                     for partner_id in data.partner_ids
-                ]
-            )
-        if data.tag_ids != []:
-            await self.common_repo.add_all(
-                [
-                    TagToEducationalProgramOrm(
-                        educational_program_id=created.id,
-                        tag_id=tag_id,
-                    )
-                    for tag_id in data.tag_ids
                 ]
             )
         if data.is_active:
