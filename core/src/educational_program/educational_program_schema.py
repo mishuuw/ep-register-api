@@ -146,6 +146,81 @@ class EducationalProgramActiveViewSchema(BaseModel):
     )
 
 
+class SortOrderEnum(str, Enum):
+    ASC = "asc"
+    DESC = "desc"
+
+
+class EducationalProgramActiveSortByEnum(str, Enum):
+    id = "id"
+    title = "title"
+    title_short = "title_short"
+    degree_title = "degree_title"
+    school_title = "school_title"
+    school_code = "school_code"
+    partner_titles = "partner_titles"
+    field_of_study_title = "field_of_study_title"
+    field_of_study_code = "field_of_study_code"
+    start_year = "start_year"
+    end_year = "end_year"
+    network_form = "network_form"
+    educational_form = "educational_form"
+    educational_standard_type = "educational_standard_type"
+    language = "language"
+    language_hours = "language_hours"
+    standard_duration_months = "standard_duration_months"
+    poa_accreditation_company = "poa_accreditation_company"
+    poa_accreditation_expiry = "poa_accreditation_expiry"
+    state_accreditation_expiry = "state_accreditation_expiry"
+    description = "description"
+
+
+class EducationalProgramActiveExportFilterSchema(BaseModel):
+    id_in: Optional[List[int]] = Field(default_factory=list)
+    title_in: Optional[List[str]] = Field(default_factory=list)
+    title_short_in: Optional[List[str]] = Field(default_factory=list)
+    degree_title_in: Optional[List[str]] = Field(default_factory=list)
+    school_title_in: Optional[List[str]] = Field(default_factory=list)
+    school_code_in: Optional[List[str]] = Field(default_factory=list)
+    partner_title_in: Optional[List[str]] = Field(default_factory=list)
+    field_of_study_title_in: Optional[List[str]] = Field(default_factory=list)
+    field_of_study_code_in: Optional[List[str]] = Field(default_factory=list)
+    start_year_in: Optional[List[int]] = Field(default_factory=list)
+    end_year_in: Optional[List[int]] = Field(default_factory=list)
+    network_form_in: Optional[List[NetworkFormEnum]] = Field(default_factory=list)
+    educational_form_in: Optional[List[EducationalFormEnum]] = Field(
+        default_factory=list
+    )
+    educational_standard_type_in: Optional[List[EducationalstandardEnum]] = Field(
+        default_factory=list
+    )
+    language_in: Optional[List[EducationalProgramLanguageTypeEnum]] = Field(
+        default_factory=list
+    )
+    language_hours_in: Optional[List[int]] = Field(default_factory=list)
+    standard_duration_months_in: Optional[List[int]] = Field(default_factory=list)
+    poa_accreditation_company_in: Optional[List[str]] = Field(default_factory=list)
+    poa_accreditation_expiry_from: Optional[date] = None
+    poa_accreditation_expiry_to: Optional[date] = None
+    state_accreditation_expiry_from: Optional[date] = None
+    state_accreditation_expiry_to: Optional[date] = None
+    description_contains: Optional[str] = None
+    search: Optional[str] = None
+
+
+class EducationalProgramActiveExportRequestSchema(BaseModel):
+    base_filter: EducationalProgramGetFilterSchema = Field(
+        default_factory=EducationalProgramGetFilterSchema
+    )
+    filter_by: EducationalProgramActiveExportFilterSchema = Field(
+        default_factory=EducationalProgramActiveExportFilterSchema
+    )
+    sort_by: EducationalProgramActiveSortByEnum = Field(
+        default=EducationalProgramActiveSortByEnum.title
+    )
+    sort_order: SortOrderEnum = Field(default=SortOrderEnum.ASC)
+
+
 # Схемы для иерархии ОП
 class EducationalProgramHierarchySchema(EducationalProgramGetSchema):
     parent_id: Optional[int] = Field(None, description="Parent educational program ID")

@@ -1,12 +1,14 @@
 from typing import Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
+from fastapi.responses import StreamingResponse
 from fastapi_restful.cbv import cbv
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.common_schema import AddViewSchema, SuccessSchema
 from src.auth.auth_service import AuthService
 from src.config.settings import get_settings
 from src.educational_program.educational_program_schema import (
+    EducationalProgramActiveExportRequestSchema,
     EducationalProgramActiveViewSchema,
     EducationalProgramAddSchema,
     EducationalProgramGetFilterSchema,
@@ -100,6 +102,28 @@ class EducationalProgramController:
         )
         return await self.educational_program_service.educational_program_active_get(
             filter=filter,
+        )
+
+    @educational_program_router.post("/active/export/excel", tags=["educational_program"])
+    @try_rollback
+    async def educational_program_active_export_excel(
+        self,
+        request: Request,
+        response: Response,
+        data: EducationalProgramActiveExportRequestSchema,
+    ):
+        await self.auth_service.admin_required(request=request, response=response)
+        file_bytes = (
+            await self.educational_program_service.educational_program_active_export_excel(
+                payload=data,
+            )
+        )
+        return StreamingResponse(
+            content=iter([file_bytes]),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": "attachment; filename=educational_program_active.xlsx"
+            },
         )
 
     @educational_program_router.post("/add", tags=["educational_program"])
